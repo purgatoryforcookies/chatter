@@ -94,7 +94,7 @@ export const useAuth = () => {
 	const refreshAnonymousAccess = async () => {
 		const refresToken = localStorage.getItem("session_r");
 
-		if (refresToken && !isExpired(refresToken)) {
+		if (refresToken && isExpired(refresToken)) {
 			const resp = await fetch("/api/token/refresh", {
 				headers: {
 					authorization: `Bearer ${refresToken}`,

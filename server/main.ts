@@ -1,5 +1,4 @@
 import { createAdapter } from "@socket.io/redis-streams-adapter";
-import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import { createServer } from "http";
@@ -47,15 +46,14 @@ app.use(
     xFrameOptions: false,
   })
 );
-app.use(
-  cors({
-    credentials: true,
-    origin: [
-      "https://key.purgatoryforcookies.com",
-      "https://chatter.purgatoryforcookies.com",
-    ],
-  })
-);
+
+app.use(function (_req, res, next) {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://key.purgatoryforcookies.com, https://chatter.purgatoryforcookies.com"
+  );
+  next();
+});
 io.use(socketIoAuth);
 registerWsRoutes(io, chatService);
 

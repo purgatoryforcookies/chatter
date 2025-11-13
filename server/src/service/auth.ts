@@ -78,7 +78,6 @@ export class AuthService<T extends User> {
     });
 
     const parsed = this.config.decodedTokenSchema.parse(payload);
-    this.verifyAudience(parsed.aud);
 
     return parsed;
   }
@@ -129,11 +128,11 @@ export class AuthService<T extends User> {
 
   private async verifyFirstpartyTokenbase(token: string, secret: string) {
     const secretEncoded = new TextEncoder().encode(secret);
-    const { payload } = await jose.jwtVerify(token, secretEncoded);
+    const { payload } = await jose.jwtVerify(token, secretEncoded, {
+      audience: this.config.audience,
+      issuer: this.config.minting.issuer,
+    });
     const parsed = this.config.decodedTokenSchema.parse(payload);
-    if (parsed.aud !== this.config.audience) {
-      throw new ForbiddenError("Token audience is incorrect");
-    }
     return parsed;
   }
 
@@ -142,7 +141,7 @@ export class AuthService<T extends User> {
       user,
       roles,
       this.config.minting.secret,
-      this.config.minting.refreshExpiry
+      this.config.minting.expiry
     );
   }
   createFirstPartyRefreshToken(user: UserForMinting, roles: UserRole[]) {
