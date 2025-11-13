@@ -21,6 +21,7 @@ export const state = reactive<{
 	async selectRoom(id?: string) {
 		if (!id) {
 			this.selectedRoom = null;
+			chatState.clear();
 			return;
 		}
 		const room = this.rooms.get(id);
@@ -42,11 +43,15 @@ export const chatState = reactive<{
 	loading: boolean;
 	messages: ChatMessage[];
 	addMessage: (message: ChatMessage) => void;
+	clear: () => void;
 }>({
 	loading: false,
 	messages: [],
 	addMessage(message) {
 		this.messages.push(message);
+	},
+	clear() {
+		this.messages = [];
 	},
 });
 

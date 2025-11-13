@@ -49,7 +49,7 @@ watch(
 	() => {
 		if (state.selectedRoom !== null) {
 			fetchData(url.value);
-		}
+		} else [chatState.clear()];
 	},
 	{ immediate: true }
 );
