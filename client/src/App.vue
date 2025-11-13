@@ -88,8 +88,6 @@ onBeforeMount(async () => {
 	if (resp.ok) {
 		const respInJson: DbUser = await resp.json();
 		auth.user = respInJson;
-	} else if (resp.status === 404) {
-		clearSession();
 	} else {
 		auth.error = `Me problem: ${resp.status}`;
 	}

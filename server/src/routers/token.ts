@@ -55,12 +55,13 @@ router.get("/refresh", async (req, res) => {
     throw new ForbiddenError("Authorization header is missing");
   }
 
-  const user = await authService.verifyFirstPartyToken(parsedToken);
+  const user = await authService.verifyFirstPartyRefreshToken(parsedToken);
 
-  const newToken = authService.createFirstPartyToken(user, ["visitor"]);
-  const newResfreshToken = authService.createFirstPartyRefreshToken(user, [
-    "visitor",
-  ]);
+  const newToken = await authService.createFirstPartyToken(user, ["visitor"]);
+  const newResfreshToken = await authService.createFirstPartyRefreshToken(
+    user,
+    ["visitor"]
+  );
 
   res.status(201).json({
     token: newToken,
@@ -90,6 +91,7 @@ router.get("/me", async (req, res) => {
         res(user);
         return;
       }
+      console.log("Is first party token");
       const user = await authService.verifyFirstPartyToken(parsedToken);
 
       res(user);

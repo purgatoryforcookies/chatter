@@ -28,7 +28,7 @@ export const useAuth = () => {
 					clientId: import.meta.env.VITE_AUTH_CLIENT_ID,
 					decodedIdTokenSchema: userSchema,
 					autoLogin: false,
-					debugLogs: true,
+					debugLogs: false,
 				});
 				oidc.value = client;
 			}
@@ -94,7 +94,7 @@ export const useAuth = () => {
 	const refreshAnonymousAccess = async () => {
 		const refresToken = localStorage.getItem("session_r");
 
-		if (refresToken && isExpired(refresToken)) {
+		if (refresToken && !isExpired(refresToken)) {
 			const resp = await fetch("/api/token/refresh", {
 				headers: {
 					authorization: `Bearer ${refresToken}`,
@@ -106,11 +106,12 @@ export const useAuth = () => {
 				const parsedToken = tokenSchema.parse(asJson);
 				localStorage.setItem("session_r", parsedToken.refreshToken);
 				return parsedToken.token;
-			} else {
-				localStorage.removeItem("session_r");
-				window.location.reload();
 			}
+			localStorage.removeItem("session_r");
+			window.location.reload();
+			return;
 		}
+
 		const newAnonAccess = await getAnonymousAccess();
 
 		if (newAnonAccess) {
