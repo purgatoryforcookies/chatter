@@ -36,7 +36,8 @@ services:
         JWT_EXP_REFRESH: ${JWT_EXP_REFRESH}
         JWT_ISSUER: ${JWT_ISSUER}
         REDIS_URL: ${REDIS_URL}
-
+    ports:
+      - 8901:${SERVER_PORT}
 
 volumes:
     postgres-data:
