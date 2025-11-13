@@ -50,7 +50,10 @@ app.use(
 app.use(
   cors({
     credentials: true,
-    origin: ["https://key.purgatoryforcookies.com/*"],
+    origin: [
+      "https://key.purgatoryforcookies.com",
+      "https://chatter.purgatoryforcookies.com",
+    ],
   })
 );
 io.use(socketIoAuth);
