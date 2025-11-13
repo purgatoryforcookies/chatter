@@ -19,10 +19,11 @@ const config = {
     port: parseInt(getenv("SERVER_PORT", "3000")),
   },
   db: {
-    host: getenv("DB_HOST", "localhost"),
-    port: parseInt(getenv("DB_PORT", "5432")),
-    user: getenv("DB_USER", "postgres"),
-    password: getenv("DB_PASSWORD", "postgres"),
+    host: getenv("POSTGRES_HOST", "localhost"),
+    port: parseInt(getenv("POSTGRES_PORT", "5432")),
+    user: getenv("POSTGRES_USER", "postgres"),
+    password: getenv("POSTGRES_PASSWORD", "postgres"),
+    database: getenv("POSTGRES_DB", "postgres"),
   },
   auth: {
     issuer: getenv("AUTH_ISSUER_URI"),
