@@ -10,6 +10,8 @@ RUN npm ci
 RUN npm run build
 
 FROM node:22-alpine AS frontend
+ARG VITE_AUTH_DOMAIN
+ARG VITE_AUTH_CLIENT_ID
 
 WORKDIR /app
 
