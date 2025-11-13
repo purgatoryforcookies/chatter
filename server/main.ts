@@ -44,6 +44,7 @@ app.use(express.json());
 app.use(
   helmet({
     contentSecurityPolicy: false,
+    xFrameOptions: false,
   })
 );
 app.use(
