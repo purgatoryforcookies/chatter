@@ -28,6 +28,7 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
+          cache-dependency-path: ./client/package-lock.json
       - name: ${{ matrix.phase }}
         working-directory: ./client
         run: |
@@ -49,8 +50,10 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
+          cache: "npm"
+          cache-dependency-path: ./server/package-lock.json
       - name: ${{ matrix.phase }}
-        working-directory: ./client
+        working-directory: ./server
         run: |
           npm ci
           ${{ matrix.command }}
