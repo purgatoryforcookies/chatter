@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { Pool } from "pg";
 
 const getenv = (key: string, value?: string) => {
@@ -45,6 +47,9 @@ const pool = new Pool({
   ...config.db,
   min: 1,
   max: 10,
+  ssl: {
+    ca: readFileSync(join(__dirname, "service", "crt", "eu-west-1-bundle.pem")),
+  },
 });
 
 export { config, pool };

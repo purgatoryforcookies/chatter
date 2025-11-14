@@ -1,4 +1,11 @@
-import { App, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import {
+  App,
+  Duration,
+  RemovalPolicy,
+  Stack,
+  StackProps,
+  aws_elasticache,
+} from "aws-cdk-lib";
 import {
   BastionHostLinux,
   BlockDeviceVolume,
@@ -50,6 +57,28 @@ export class ChatStack extends Stack {
   ) {
     super(scope, id, props);
 
+    const elasticacheSecurityGroup = new SecurityGroup(
+      this,
+      "ElastiCacheSecurityGroup",
+      {
+        vpc: stacks.vpc,
+        allowAllOutbound: true,
+        description: "ElastiCache Security Group",
+        securityGroupName: "ElastiCacheSecurityGroup",
+      }
+    );
+
+    const cache = new aws_elasticache.CfnServerlessCache(
+      this,
+      "ServerlessCache",
+      {
+        engine: "redis",
+        serverlessCacheName: "MyServerlessCache",
+        securityGroupIds: [elasticacheSecurityGroup.securityGroupId],
+        subnetIds: stacks.vpc.privateSubnets.map((i) => i.subnetId),
+      }
+    );
+
     const dbSecret = new Secret(this, `DatabaseSecret`, {
       secretName: `${options.env}-db-access`,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -60,14 +89,14 @@ export class ChatStack extends Stack {
       },
     });
 
-    const tokenSecret = new Secret(this, `DatabaseSecret`, {
+    const tokenSecret = new Secret(this, `JwtMintingSecret`, {
       secretName: `${options.env}-token-secret`,
       removalPolicy: RemovalPolicy.DESTROY,
       generateSecretString: {
         passwordLength: 64,
       },
     });
-    const refreshSecret = new Secret(this, `DatabaseSecret`, {
+    const refreshSecret = new Secret(this, `JwtMintingRefreshSecret`, {
       secretName: `${options.env}-token-refresh-secret`,
       removalPolicy: RemovalPolicy.DESTROY,
       generateSecretString: {
@@ -127,16 +156,21 @@ export class ChatStack extends Stack {
     );
 
     dbSecret.grantRead(taskRole);
+    tokenSecret.grantRead(taskRole);
+    refreshSecret.grantRead(taskRole);
 
     const cluster = new Cluster(this, "ChatCluster", {
       clusterName: `${options.env}-chat-cluster`,
       vpc: stacks.vpc,
     });
 
+    const ecsSG = new SecurityGroup(this, "EcsSG", { vpc: stacks.vpc });
+
     this.ecs = new ApplicationLoadBalancedFargateService(this, "ChatService", {
       cluster,
       serviceName: `${options.env}-chat-service`,
       loadBalancerName: `${options.env}-chat-alb`,
+      securityGroups: [ecsSG],
       taskSubnets: { subnetType: SubnetType.PRIVATE_WITH_EGRESS },
       taskImageOptions: {
         taskRole: taskRole,
@@ -144,27 +178,30 @@ export class ChatStack extends Stack {
         containerPort: 3000,
         containerName: `${options.env}-chat-container`,
         secrets: {
-          DB_PASSWORD: EcsSecret.fromSecretsManager(dbSecret, "password"),
-          DB_USERNAME: EcsSecret.fromSecretsManager(dbSecret, "username"),
+          POSTGRES_PASSWORD: EcsSecret.fromSecretsManager(dbSecret, "password"),
+          POSTGRES_USER: EcsSecret.fromSecretsManager(dbSecret, "username"),
           JWT_SECRET: EcsSecret.fromSecretsManager(tokenSecret),
           JWT_SECRET_REFRESH: EcsSecret.fromSecretsManager(refreshSecret),
         },
         environment: {
-          DB_PORT: this.db.dbInstanceEndpointPort,
-          DB_HOST: this.db.dbInstanceEndpointAddress,
+          POSTGRES_PORT: this.db.dbInstanceEndpointPort,
+          POSTGRES_HOST: this.db.dbInstanceEndpointAddress,
           SERVER_PORT: "3000",
           DEVELOPMENT: "false",
+          JWT_EXP: "1h",
+          JWT_EXP_REFRESH: "7d",
           AUTH_ISSUER_URI: "https://key.purgatoryforcookies.com/realms/chat",
           AUTH_AUDIENCE: "chat",
           JWT_ISSUER: "https://local.purgatoryforcookies.com",
+          REDIS_URL: cache.attrReaderEndpointAddress,
         },
       },
       cpu: 256,
-
       memoryLimitMiB: 512,
       desiredCount: 1,
       publicLoadBalancer: true,
     });
+
     this.ecs.targetGroup.configureHealthCheck({
       path: "/hello",
       interval: Duration.seconds(60),
@@ -174,6 +211,8 @@ export class ChatStack extends Stack {
       "deregistration_delay.timeout_seconds",
       "10"
     );
+
+    elasticacheSecurityGroup.addIngressRule(ecsSG, Port.tcp(6379));
 
     this.db.connections.allowDefaultPortFrom(this.ecs.service);
 

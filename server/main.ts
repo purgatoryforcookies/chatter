@@ -19,7 +19,7 @@ import { CustomSocketServer } from "./types";
 
 const app = express();
 const server = createServer(app);
-const redisClient = new Redis({ host: config.redis.url });
+const redisClient = new Redis({ host: config.redis.url, tls: {} });
 
 export const authService = new AuthService<User>({
   issuer: config.auth.issuer,
@@ -37,6 +37,12 @@ export const chatService = new ChatService();
 
 export const io = new Server<CustomSocketServer>(server, {
   adapter: createAdapter(redisClient),
+  cookie: {
+    name: "x-chat",
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+  },
 });
 
 app.use(express.json());
@@ -56,15 +62,14 @@ app.use(function (_req, res, next) {
 });
 io.use(socketIoAuth);
 registerWsRoutes(io, chatService);
+app.use("/api/token", tokenRouter);
+app.use("/api", apiRouter);
+
+app.get("/hello", (_req, res) => {
+  res.status(200).send("Hello");
+});
 
 const main = async () => {
-  app.use("/api/token", tokenRouter);
-  app.use("/api", apiRouter);
-
-  app.get("/hello", (_req, res) => {
-    res.status(200).send("Hello");
-  });
-
   if (config.isDev) {
     const { instrument } = await import("@socket.io/admin-ui");
     const middleWareProxy = createProxyMiddleware({
@@ -95,6 +100,9 @@ const main = async () => {
 
     redisClient.on("ready", () => {
       console.log(`Redis: ${redisClient.status}`);
+    });
+    redisClient.on("error", (error) => {
+      console.log(`Redis: ${redisClient.status}, error: ${error.message}`);
     });
   });
 };

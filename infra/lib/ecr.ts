@@ -15,6 +15,7 @@ export class EcrStack extends Stack {
     this.repo = new Repository(this, "ChatAppRepository", {
       repositoryName: "chat-app-server",
       removalPolicy: RemovalPolicy.DESTROY,
+      emptyOnDelete: true,
       lifecycleRules: [{ maxImageAge: Duration.days(200) }],
     });
   }
