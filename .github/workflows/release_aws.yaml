@@ -83,6 +83,11 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Deploy AWS ECR stack
+        env:
+          AWS_ECR_TARGET_REPOSITORY: ${{ vars.AWS_ECR_TARGET_REPOSITORY }}
+          AUTH_ISSUER_URI: ${{ vars.AUTH_ISSUER_URI }}
+          AUTH_AUDIENCE: ${{ vars.AUTH_AUDIENCE }}
+          JWT_ISSUER: ${{ vars.JWT_ISSUER }}
         working-directory: ./infra
         run: |
           npm ci
