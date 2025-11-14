@@ -178,7 +178,10 @@ export class ChatStack extends Stack {
       taskSubnets: { subnetType: SubnetType.PRIVATE_WITH_EGRESS },
       taskImageOptions: {
         taskRole: taskRole,
-        image: ContainerImage.fromEcrRepository(stacks.ecr.repo),
+        image: ContainerImage.fromEcrRepository(
+          stacks.ecr.repo,
+          config.ecr.tag
+        ),
         containerPort: 3000,
         containerName: `${options.env}-chat-container`,
         secrets: {
