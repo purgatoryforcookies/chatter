@@ -100,8 +100,8 @@ jobs:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ vars.AWS_ECR_TARGET_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
-          AUTH_ISSUER_URI: ${{ AUTH_ISSUER_URI }}
-          AUTH_CLIENT: ${{ AUTH_CLIENT }}
+          AUTH_ISSUER_URI: ${{ vars.AUTH_ISSUER_URI }}
+          AUTH_CLIENT: ${{ vars.AUTH_CLIENT }}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
             --build-arg VITE_AUTH_DOMAIN=$AUTH_ISSUER_URI \
