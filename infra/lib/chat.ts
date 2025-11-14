@@ -39,6 +39,7 @@ import {
 } from "aws-cdk-lib/aws-rds";
 import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 import { StackOptions } from "../bin";
+import { config } from "../src/config";
 import { EcrStack } from "./ecr";
 
 export class ChatStack extends Stack {
@@ -73,11 +74,13 @@ export class ChatStack extends Stack {
       "ServerlessCache",
       {
         engine: "redis",
-        serverlessCacheName: "MyServerlessCache",
+        serverlessCacheName: "ChatAppCache",
         securityGroupIds: [elasticacheSecurityGroup.securityGroupId],
         subnetIds: stacks.vpc.privateSubnets.map((i) => i.subnetId),
       }
     );
+    cache.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    elasticacheSecurityGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     const dbSecret = new Secret(this, `DatabaseSecret`, {
       secretName: `${options.env}-db-access`,
@@ -165,6 +168,7 @@ export class ChatStack extends Stack {
     });
 
     const ecsSG = new SecurityGroup(this, "EcsSG", { vpc: stacks.vpc });
+    ecsSG.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     this.ecs = new ApplicationLoadBalancedFargateService(this, "ChatService", {
       cluster,
@@ -190,9 +194,9 @@ export class ChatStack extends Stack {
           DEVELOPMENT: "false",
           JWT_EXP: "1h",
           JWT_EXP_REFRESH: "7d",
-          AUTH_ISSUER_URI: "https://key.purgatoryforcookies.com/realms/chat",
-          AUTH_AUDIENCE: "chat",
-          JWT_ISSUER: "https://local.purgatoryforcookies.com",
+          AUTH_ISSUER_URI: config.auth.issuerUri,
+          AUTH_AUDIENCE: config.auth.audience,
+          JWT_ISSUER: config.auth.minting.issuer,
           REDIS_URL: cache.attrReaderEndpointAddress,
         },
       },
