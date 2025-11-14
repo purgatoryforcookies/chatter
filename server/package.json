@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "dev": "nodemon -r dotenv/config --watch",
-    "build": "tsc"
+    "build": "tsc",
+    "postbuild": "cp -a src/service/crt/ dist/server/src/service/crt/"
   },
   "author": "",
   "license": "ISC",
