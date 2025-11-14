@@ -19,6 +19,7 @@ const getenv = (key: string, value?: string) => {
 export const config = {
   ecr: {
     repo: getenv("AWS_ECR_TARGET_REPOSITORY"),
+    tag: getenv("IMAGE_TAG"),
   },
   auth: {
     issuerUri: getenv("AUTH_ISSUER_URI"),
