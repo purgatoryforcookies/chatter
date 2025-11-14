@@ -88,6 +88,7 @@ jobs:
           AUTH_ISSUER_URI: ${{ vars.AUTH_ISSUER_URI }}
           AUTH_AUDIENCE: ${{ vars.AUTH_AUDIENCE }}
           JWT_ISSUER: ${{ vars.JWT_ISSUER }}
+          IMAGE_TAG: ${{ github.sha }}
         working-directory: ./infra
         run: |
           npm ci
