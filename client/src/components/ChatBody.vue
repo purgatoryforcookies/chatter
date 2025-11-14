@@ -4,6 +4,7 @@
 		<ul v-else class="flex flex-col gap-2">
 			<li
 				v-for="item in chatState.messages"
+				:key="item.id"
 				class="flex gap-3 px-4 py-1 hover:bg-neutral-100/10 rounded-lg transition-colors"
 			>
 				<div
@@ -49,7 +50,9 @@ watch(
 	() => {
 		if (state.selectedRoom !== null) {
 			fetchData(url.value);
-		} else [chatState.clear()];
+		} else {
+			chatState.clear();
+		}
 	},
 	{ immediate: true }
 );

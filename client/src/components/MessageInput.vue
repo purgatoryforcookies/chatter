@@ -43,10 +43,11 @@ watch(
 	}
 );
 
-const onSubmit = (e: any) => {
+const onSubmit = (e: SubmitEvent | PointerEvent) => {
 	e.preventDefault();
 	loading.value = true;
 	const room = state?.selectedRoom?.id;
+	if (value.value.length === 0) return;
 	if (room && room.length > 0) {
 		error.value = "";
 		socket.emit("message", room, value.value, (message) => {

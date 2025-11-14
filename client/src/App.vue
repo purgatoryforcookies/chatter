@@ -50,11 +50,11 @@
 
 <script setup lang="ts">
 import ChatBody from "@/components/ChatBody.vue";
-import Input from "@/components/Input.vue";
-import Loading from "@/components/Loading.vue";
-import Me from "@/components/Me.vue";
+import Loading from "@/components/DefaultLoading.vue";
+import Input from "@/components/MessageInput.vue";
 import RoomsBar from "@/components/RoomsBar.vue";
 import UserBar from "@/components/UserBar.vue";
+import Me from "@/components/UserProfile.vue";
 import { auth, useAuth } from "@/service/auth";
 import { chatState, notifications, state } from "@/state";
 import { onBeforeMount, onUnmounted, ref } from "vue";

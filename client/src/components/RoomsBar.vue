@@ -4,6 +4,7 @@
 		<div v-else class="w-full">
 			<ul class="py-2 flex flex-col w-full">
 				<li
+					:key="item.id"
 					v-for="item in state.rooms.values()"
 					class="px-4 py-1.5 flex justify-between text-body hover:cursor-pointer hover:bg-neutral-100 hover:text-brand-600 transition-colors rounded-md mx-2"
 					:class="[state.selectedRoom?.id === item.id ? 'bg-neutral-100 text-brand-600' : '']"

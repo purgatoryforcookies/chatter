@@ -4,6 +4,7 @@
 		<div v-else>
 			<ul class="py-2 flex flex-col w-full h-full">
 				<li
+					:key="item.id"
 					v-for="item in [...state.users.values()]
 						.filter((i) => i.id !== auth.user?.id)
 						.sort((a, b) => Number(state.connectedUser.has(b.id)) - Number(state.connectedUser.has(a.id)))"
@@ -51,7 +52,7 @@ const createRoom = async (participant: string, name: string) => {
 			},
 			body: JSON.stringify({
 				name: `DM from ${auth.user?.username}`,
-				description: "Private chat",
+				description: `Private chat with ${name} and ${auth.user?.username}`,
 				participants: [participant],
 			}),
 		});
