@@ -1,0 +1,133 @@
+name: Build, release and deploy to aws
+
+# Explicit references:
+# Stack name for ecr in ecr step
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  client:
+    timeout-minutes: 10
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - phase: Test
+            command: npm run test:unit
+          - phase: Lint
+            command: npm run lint
+          - phase: Build
+            command: npm run build
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: ${{ matrix.phase }}
+        working-directory: ./client
+        run: |
+          npm ci
+          ${{ matrix.command }}
+
+  server:
+    timeout-minutes: 10
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - phase: Test
+            command: npm run test
+          - phase: Build
+            command: npm run build
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: ${{ matrix.phase }}
+        working-directory: ./client
+        run: |
+          npm ci
+          ${{ matrix.command }}
+
+  ecr:
+    runs-on: ubuntu-22.04
+    needs: [client, server]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_GITHUB_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Deploy AWS ECR stack
+        working-directory: ./infra
+        run: |
+          npm ci
+          npx cdk deploy EcrStack --require-approval never
+
+  docker:
+    runs-on: ubuntu-22.04
+    needs: [client, server, ecr]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_GITHUB_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.AWS_ECR_TARGET_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+          AUTH_ISSUER_URI: ${{ AUTH_ISSUER_URI }}
+          AUTH_CLIENT: ${{ AUTH_CLIENT }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+            --build-arg VITE_AUTH_DOMAIN=$AUTH_ISSUER_URI \
+            --build-arg VITE_AUTH_CLIENT_ID=$AUTH_CLIENT .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+  infra:
+    runs-on: ubuntu-22.04
+    needs: [client, server, docker, ecr]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_GITHUB_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Deploy infra to AWS
+        working-directory: ./infra
+        env:
+          AWS_ECR_TARGET_REPOSITORY: ${{ vars.AWS_ECR_TARGET_REPOSITORY }}
+          AUTH_ISSUER_URI: ${{ vars.AUTH_ISSUER_URI }}
+          AUTH_AUDIENCE: ${{ vars.AUTH_AUDIENCE }}
+          JWT_ISSUER: ${{ vars.JWT_ISSUER }}
+        run: |
+          npm ci
+          npx cdk deploy --all --require-approval never

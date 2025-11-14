@@ -1,0 +1,75 @@
+name: Pull request pipeline
+
+on:
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  client:
+    timeout-minutes: 10
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - phase: Test
+            command: npm run test:unit
+          - phase: Lint
+            command: npm run lint
+          - phase: Build
+            command: npm run build
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: ${{ matrix.phase }}
+        working-directory: ./client
+        run: |
+          npm ci
+          ${{ matrix.command }}
+
+  server:
+    timeout-minutes: 10
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - phase: Test
+            command: npm run test
+          - phase: Build
+            command: npm run build
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: ${{ matrix.phase }}
+        working-directory: ./client
+        run: |
+          npm ci
+          ${{ matrix.command }}
+
+  docker-build:
+    runs-on: ubuntu-22.04
+    needs: [client, server]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          push: false
+          tags: chatter:ci-test
+          build-args: |
+            VITE_AUTH_DOMAIN=ci_test
+            VITE_AUTH_CLIENT_ID=ci_test
