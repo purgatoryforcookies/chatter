@@ -2,3 +2,4 @@ node_modules
 .env
 server/client
 client/dist
+server/dist
