@@ -1,3 +1,4 @@
+import z from "zod";
 import { CustomSocketServer } from "../types";
 import { ChatService } from "./service/chat";
 
@@ -27,14 +28,21 @@ export const registerWsRoutes = (
 
     socket.on("message", async (room, message, ack) => {
       try {
+        const parsedMessage = z
+          .string()
+          .transform((value) => value.replace(/[^\x00-\x7F]/g, ""))
+          .parse(message);
+        const parsedRoom = z.string().parse(room);
+
         const result = await service.sendMessage(
           socket.data.sub,
-          room,
-          message
+          parsedRoom,
+          parsedMessage
         );
         socket.to(result.room).emit("message", result);
         ack(result);
       } catch (error) {
+        console.log(`Users ${socket.data.sub} message failed`, error);
         ack(null, "Cannot send message");
       }
     });
