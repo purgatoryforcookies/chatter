@@ -13,6 +13,33 @@ services:
         - postgres-data:/var/lib/postgresql/data
         - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  server:
+    image: chatter-server
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile.dev
+    command: npm run dev
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server/:/app/server
+      - binserver:/app/server/node_modules
+    ports:
+      - 3000:3000
+
+  client:
+    image: chatter-client
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile.dev
+    command: npm run dev
+    env_file:
+      - ./client/.env
+    volumes:
+      - ./client/:/app/client
+      - binclient:/app/client/node_modules
 
 volumes:
     postgres-data:
+    binclient:
+    binserver:

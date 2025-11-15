@@ -4,9 +4,9 @@ name: Build, release and deploy to aws
 # Stack name for ecr in ecr step
 
 on:
-  push:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
   workflow_dispatch:
 
 concurrency:

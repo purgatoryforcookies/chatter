@@ -43,9 +43,7 @@
 			</div>
 		</div>
 	</div>
-	<div v-else class="bg-default-background size-full flex justify-center items-center">
-		<Loading />
-	</div>
+	<div v-else class="bg-default-background size-full flex justify-center items-center"><Loading /></div>
 </template>
 
 <script setup lang="ts">

@@ -1,0 +1,12 @@
+*.env
+**/dist
+**/node_modules/
+infra/
+Makefile
+*.md
+.github
+**/Dockerfile.dev
+Dockerfile
+.dockerignore
+.git
+.github
