@@ -6,6 +6,7 @@
 					v-model="value"
 					:placeholder="placeholder"
 					class="w-full px-4 py-2 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-transparent placeholder-neutral-300 text-neutral-500 bg-neutral-50"
+					:class="[loading ? 'animate-pulse' : '']"
 					:disabled="loading"
 					ref="input"
 					autofocus
@@ -47,7 +48,10 @@ const onSubmit = (e: SubmitEvent | PointerEvent) => {
 	e.preventDefault();
 	loading.value = true;
 	const room = state?.selectedRoom?.id;
-	if (value.value.length === 0) return;
+	if (value.value.length === 0) {
+		loading.value = false;
+		return;
+	}
 	if (room && room.length > 0) {
 		error.value = "";
 		socket.emit("message", room, value.value, (message) => {
