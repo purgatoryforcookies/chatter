@@ -5,7 +5,7 @@
   "main": "main.ts",
   "scripts": {
     "test": "echo tests disabled",
-    "dev": "nodemon -r dotenv/config --watch",
+    "dev": "nodemon -L -e ts -r dotenv/config",
     "build": "tsc",
     "postbuild": "cp -a src/service/crt/ dist/server/src/service/crt/"
   },

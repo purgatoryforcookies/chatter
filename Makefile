@@ -21,3 +21,7 @@ bastion:
 	aws ec2 describe-instances --filters "Name=tag:Name,Values=rds-bastion-ec2" --query 'Reservations[*].Instances[*].{Instance:InstanceId}' --output text
 endpoints:
 	aws dms describe-endpoints
+
+
+dev:
+	docker compose -f docker-compose.dev.yaml up --build

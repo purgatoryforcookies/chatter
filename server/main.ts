@@ -19,7 +19,10 @@ import { CustomSocketServer } from "./types";
 
 const app = express();
 const server = createServer(app);
-const redisClient = new Redis({ host: config.redis.url, tls: {} });
+const redisClient = new Redis({
+  host: config.redis.url,
+  tls: !config.isInEcs ? undefined : {},
+});
 
 export const authService = new AuthService<User>({
   issuer: config.auth.issuer,
@@ -71,9 +74,17 @@ app.get("/hello", (_req, res) => {
 
 const main = async () => {
   if (config.isDev) {
+    if (!config.server.clientProxy) {
+      throw new Error(
+        "Development mode needs to know where to proxy client requests! CLIENT_PROXY?"
+      );
+    }
+    console.log(
+      `PROXY: Creating proxy for client ${config.server.clientProxy}`
+    );
     const { instrument } = await import("@socket.io/admin-ui");
     const middleWareProxy = createProxyMiddleware({
-      target: "http://localhost:5173",
+      target: config.server.clientProxy,
       ws: true,
       changeOrigin: true,
     });

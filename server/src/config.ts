@@ -2,37 +2,43 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { Pool } from "pg";
 
-const getenv = (key: string, value?: string) => {
+function getenv(key: string, fallthrough?: false): string;
+function getenv(key: string, fallthrough: true): string | null;
+function getenv(key: string, fallthrough?: boolean): string | null {
   const env = process.env[key];
 
   if (env) {
     return env;
   }
-
-  if (!value) {
-    throw new Error(`Variable ${key} is undefined`);
+  if (fallthrough) {
+    console.log(
+      `Environment key ${key} is not set. This was specifically allowed.`
+    );
+    return null;
   }
-  return value;
-};
+  throw new Error(`Variable ${key} is undefined`);
+}
 
 const config = {
   isDev: getenv("DEVELOPMENT") !== "false",
+  isInEcs: getenv("AWS_EXECUTION_ENV", true),
   server: {
-    port: parseInt(getenv("SERVER_PORT", "3000")),
+    port: parseInt(getenv("SERVER_PORT")),
+    clientProxy: getenv("CLIENT_PROXY", true),
   },
   db: {
-    host: getenv("POSTGRES_HOST", "localhost"),
-    port: parseInt(getenv("POSTGRES_PORT", "5432")),
-    user: getenv("POSTGRES_USER", "postgres"),
-    password: getenv("POSTGRES_PASSWORD", "postgres"),
-    database: getenv("POSTGRES_DB", "postgres"),
+    host: getenv("POSTGRES_HOST"),
+    port: parseInt(getenv("POSTGRES_PORT")),
+    user: getenv("POSTGRES_USER"),
+    password: getenv("POSTGRES_PASSWORD"),
+    database: getenv("POSTGRES_DB"),
   },
   auth: {
     issuer: getenv("AUTH_ISSUER_URI"),
     audience: getenv("AUTH_AUDIENCE"),
   },
   redis: {
-    url: getenv("REDIS_URL", "localhost"),
+    url: getenv("REDIS_URL"),
   },
   jwt: {
     secret: getenv("JWT_SECRET"),
@@ -47,9 +53,13 @@ const pool = new Pool({
   ...config.db,
   min: 1,
   max: 10,
-  ssl: {
-    ca: readFileSync(join(__dirname, "service", "crt", "eu-west-1-bundle.pem")),
-  },
+  ssl: config.isInEcs
+    ? {
+        ca: readFileSync(
+          join(__dirname, "service", "crt", "eu-west-1-bundle.pem")
+        ),
+      }
+    : false,
 });
 
 export { config, pool };
