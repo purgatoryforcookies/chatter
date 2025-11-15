@@ -51,7 +51,8 @@ Locally exposed ports
 
 ### AWS
 
-0. Fork the repository
+-1. Fork the repository 0. Uncomment trigger on master in `release_aws.yaml` file
+
 1. Create an iam provider [Oidc in aws](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws)
 2. Create new iam role and permission for the provider [Ecr login](https://github.com/aws-actions/amazon-ecr-login?tab=readme-ov-file#ecr-private)
 3. Create repository variables
