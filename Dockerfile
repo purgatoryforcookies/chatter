@@ -22,8 +22,6 @@ WORKDIR /app/client
 RUN npm ci
 RUN npm run build
 
-
-
 FROM node:22-alpine
 ENV NODE_ENV=production
 
