@@ -45,6 +45,7 @@ import { EcrStack } from "./ecr";
 export class ChatStack extends Stack {
   ecs: ApplicationLoadBalancedFargateService;
   db: DatabaseInstance;
+  private databaseName = "chat";
 
   constructor(
     scope: App,
@@ -133,7 +134,7 @@ export class ChatStack extends Stack {
       deleteAutomatedBackups: true,
       removalPolicy: RemovalPolicy.DESTROY,
       deletionProtection: false,
-      databaseName: "chat",
+      databaseName: this.databaseName,
       publiclyAccessible: false,
     });
 
@@ -193,6 +194,7 @@ export class ChatStack extends Stack {
         environment: {
           POSTGRES_PORT: this.db.dbInstanceEndpointPort,
           POSTGRES_HOST: this.db.dbInstanceEndpointAddress,
+          POSTGRES_DB: this.databaseName,
           SERVER_PORT: "3000",
           DEVELOPMENT: "false",
           JWT_EXP: "1h",
@@ -205,7 +207,7 @@ export class ChatStack extends Stack {
       },
       cpu: 256,
       memoryLimitMiB: 512,
-      desiredCount: 1,
+      desiredCount: 2,
       publicLoadBalancer: true,
     });
 
