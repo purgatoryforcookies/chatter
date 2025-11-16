@@ -1,13 +1,15 @@
 include server/.env
+include infra/.env
 include client/.env
+include ./.env
 
 build:
 	docker build -t chatter --build-arg VITE_AUTH_DOMAIN=${VITE_AUTH_DOMAIN} --build-arg VITE_AUTH_CLIENT_ID=${VITE_AUTH_CLIENT_ID} .
 
 pushecr:
-	aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ?.dkr.ecr.eu-west-1.amazonaws.com
-	docker tag chatter:latest ?.dkr.ecr.eu-west-1.amazonaws.com/chat-app-server:latest
-	docker push ?.dkr.ecr.eu-west-1.amazonaws.com/chat-app-server:latest
+	aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT}.dkr.ecr.eu-west-1.amazonaws.com
+	docker tag chatter:latest ${AWS_ACCOUNT}.dkr.ecr.eu-west-1.amazonaws.com/${AWS_ECR_TARGET_REPOSITORY}:latest
+	docker push ${AWS_ACCOUNT}.dkr.ecr.eu-west-1.amazonaws.com/${AWS_ECR_TARGET_REPOSITORY}:latest
 
 buildaws: build pushecr
 
