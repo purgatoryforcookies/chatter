@@ -1,24 +1,5 @@
-import {
-  App,
-  Duration,
-  RemovalPolicy,
-  Stack,
-  StackProps,
-  aws_elasticache,
-} from "aws-cdk-lib";
-import {
-  BastionHostLinux,
-  BlockDeviceVolume,
-  InstanceClass,
-  InstanceSize,
-  InstanceType,
-  MachineImage,
-  Peer,
-  Port,
-  SecurityGroup,
-  SubnetType,
-  Vpc,
-} from "aws-cdk-lib/aws-ec2";
+import { App, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { Port, SecurityGroup, SubnetType, Vpc } from "aws-cdk-lib/aws-ec2";
 import {
   Cluster,
   ContainerImage,
@@ -32,11 +13,6 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
-import {
-  DatabaseInstance,
-  DatabaseInstanceEngine,
-  PostgresEngineVersion,
-} from "aws-cdk-lib/aws-rds";
 import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 import { StackOptions } from "../bin";
 import { config } from "../src/config";
@@ -44,8 +20,6 @@ import { EcrStack } from "./ecr";
 
 export class ChatStack extends Stack {
   ecs: ApplicationLoadBalancedFargateService;
-  db: DatabaseInstance;
-  private databaseName = "chat";
 
   constructor(
     scope: App,
@@ -54,43 +28,21 @@ export class ChatStack extends Stack {
     stacks: {
       vpc: Vpc;
       ecr: EcrStack;
+      rds: {
+        host: string;
+        port: string;
+        sg: SecurityGroup;
+        secret: Secret;
+      };
+      cacheEndpoint: string;
+      cacheSG: SecurityGroup;
     },
     props?: StackProps
   ) {
     super(scope, id, props);
 
-    const elasticacheSecurityGroup = new SecurityGroup(
-      this,
-      "ElastiCacheSecurityGroup",
-      {
-        vpc: stacks.vpc,
-        allowAllOutbound: true,
-        description: "ElastiCache Security Group",
-        securityGroupName: "ElastiCacheSecurityGroup",
-      }
-    );
-
-    const cache = new aws_elasticache.CfnServerlessCache(
-      this,
-      "ServerlessCache",
-      {
-        engine: "redis",
-        serverlessCacheName: "ChatAppCache",
-        securityGroupIds: [elasticacheSecurityGroup.securityGroupId],
-        subnetIds: stacks.vpc.privateSubnets.map((i) => i.subnetId),
-      }
-    );
-    cache.applyRemovalPolicy(RemovalPolicy.DESTROY);
-    elasticacheSecurityGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
-
-    const dbSecret = new Secret(this, `DatabaseSecret`, {
-      secretName: `${options.env}-db-access`,
-      removalPolicy: RemovalPolicy.DESTROY,
-      generateSecretString: {
-        secretStringTemplate: JSON.stringify({ username: "postgres" }),
-        generateStringKey: "password",
-        excludeCharacters: '/@"',
-      },
+    const rdsSecret = Secret.fromSecretAttributes(this, "rdsSecret", {
+      secretCompleteArn: stacks.rds.secret.secretArn,
     });
 
     const tokenSecret = new Secret(this, `JwtMintingSecret`, {
@@ -106,36 +58,6 @@ export class ChatStack extends Stack {
       generateSecretString: {
         passwordLength: 64,
       },
-    });
-
-    this.db = new DatabaseInstance(this, "DbInstance", {
-      vpc: stacks.vpc,
-      instanceIdentifier: `${options.env}-chat-db`,
-      vpcSubnets: {
-        subnetType: SubnetType.PRIVATE_ISOLATED,
-      },
-      engine: DatabaseInstanceEngine.postgres({
-        version: PostgresEngineVersion.VER_17_6,
-      }),
-      instanceType: InstanceType.of(
-        InstanceClass.BURSTABLE3,
-        InstanceSize.MEDIUM
-      ),
-      credentials: {
-        username: dbSecret.secretValueFromJson("username").toString(),
-        password: dbSecret.secretValueFromJson("password"),
-      },
-      multiAz: false,
-      allocatedStorage: 100,
-      maxAllocatedStorage: 120,
-      allowMajorVersionUpgrade: false,
-      autoMinorVersionUpgrade: true,
-      backupRetention: Duration.days(0),
-      deleteAutomatedBackups: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      deletionProtection: false,
-      databaseName: this.databaseName,
-      publiclyAccessible: false,
     });
 
     const taskRole = new Role(this, "ChatBackendTaskRole", {
@@ -159,7 +81,7 @@ export class ChatStack extends Stack {
       })
     );
 
-    dbSecret.grantRead(taskRole);
+    rdsSecret.grantRead(taskRole);
     tokenSecret.grantRead(taskRole);
     refreshSecret.grantRead(taskRole);
 
@@ -170,6 +92,22 @@ export class ChatStack extends Stack {
 
     const ecsSG = new SecurityGroup(this, "EcsSG", { vpc: stacks.vpc });
     ecsSG.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+    const cacheSg = SecurityGroup.fromSecurityGroupId(
+      this,
+      "cacheSg",
+      stacks.cacheSG.securityGroupId
+    );
+
+    cacheSg.addIngressRule(ecsSG, Port.tcp(6379));
+
+    const rdsSg = SecurityGroup.fromSecurityGroupId(
+      this,
+      "RdsSg",
+      stacks.rds.sg.securityGroupId
+    );
+
+    rdsSg.addIngressRule(ecsSG, Port.tcp(5432));
 
     this.ecs = new ApplicationLoadBalancedFargateService(this, "ChatService", {
       cluster,
@@ -186,15 +124,18 @@ export class ChatStack extends Stack {
         containerPort: 3000,
         containerName: `${options.env}-chat-container`,
         secrets: {
-          POSTGRES_PASSWORD: EcsSecret.fromSecretsManager(dbSecret, "password"),
-          POSTGRES_USER: EcsSecret.fromSecretsManager(dbSecret, "username"),
+          POSTGRES_PASSWORD: EcsSecret.fromSecretsManager(
+            rdsSecret,
+            "password"
+          ),
+          POSTGRES_USER: EcsSecret.fromSecretsManager(rdsSecret, "username"),
           JWT_SECRET: EcsSecret.fromSecretsManager(tokenSecret),
           JWT_SECRET_REFRESH: EcsSecret.fromSecretsManager(refreshSecret),
         },
         environment: {
-          POSTGRES_PORT: this.db.dbInstanceEndpointPort,
-          POSTGRES_HOST: this.db.dbInstanceEndpointAddress,
-          POSTGRES_DB: this.databaseName,
+          POSTGRES_PORT: stacks.rds.port,
+          POSTGRES_HOST: stacks.rds.host,
+          POSTGRES_DB: config.rds.databaseName,
           SERVER_PORT: "3000",
           DEVELOPMENT: "false",
           JWT_EXP: "1h",
@@ -202,7 +143,7 @@ export class ChatStack extends Stack {
           AUTH_ISSUER_URI: config.auth.issuerUri,
           AUTH_AUDIENCE: config.auth.audience,
           JWT_ISSUER: config.auth.minting.issuer,
-          REDIS_URL: cache.attrReaderEndpointAddress,
+          REDIS_URL: stacks.cacheEndpoint,
         },
       },
       cpu: 256,
@@ -220,38 +161,5 @@ export class ChatStack extends Stack {
       "deregistration_delay.timeout_seconds",
       "10"
     );
-
-    elasticacheSecurityGroup.addIngressRule(ecsSG, Port.tcp(6379));
-
-    this.db.connections.allowDefaultPortFrom(this.ecs.service);
-
-    const securityGroup = new SecurityGroup(this, "bastion-sg", {
-      vpc: stacks.vpc,
-      securityGroupName: "bastion-sg",
-      allowAllOutbound: false,
-    });
-    securityGroup.addEgressRule(Peer.anyIpv4(), Port.allTcp());
-    // securityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(22));
-
-    this.db.connections.allowDefaultPortFrom(securityGroup);
-
-    new BastionHostLinux(this, "Ec2BastionInstance", {
-      vpc: stacks.vpc,
-      securityGroup: securityGroup,
-      instanceName: "rds-bastion-ec2",
-      instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO),
-      machineImage: MachineImage.latestAmazonLinux2(),
-      subnetSelection: {
-        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
-      },
-      blockDevices: [
-        {
-          deviceName: "/dev/sdh",
-          volume: BlockDeviceVolume.ebs(10, {
-            encrypted: true,
-          }),
-        },
-      ],
-    });
   }
 }

@@ -27,4 +27,7 @@ export const config = {
       issuer: getenv("JWT_ISSUER"),
     },
   },
+  rds: {
+    databaseName: "chat",
+  },
 };
