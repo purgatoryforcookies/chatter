@@ -6,10 +6,10 @@
 				<li
 					:key="item.id"
 					v-for="item in state.rooms.values()"
-					class="px-4 py-1.5 flex justify-between text-body hover:cursor-pointer hover:bg-neutral-100 hover:text-brand-600 transition-colors rounded-md mx-2"
+					class="px-4 flex items-center justify-between text-body hover:cursor-pointer hover:bg-neutral-100 hover:text-brand-600 transition-colors rounded-md"
 					:class="[state.selectedRoom?.id === item.id ? 'bg-neutral-100 text-brand-600' : '']"
 				>
-					<div class="flex gap-4 w-full" @click="state.selectRoom(item.id)">
+					<div class="flex gap-4 w-full py-1.5 h-full px-2" @click="state.selectRoom(item.id)">
 						<span :class="[item.private ? 'text-orange-600' : '']">#{{ item.name }}</span>
 						<span
 							v-if="notifications.unread.has(item.id)"
@@ -19,6 +19,7 @@
 					</div>
 					<span
 						@click="() => deleteRoom(item.id)"
+						v-if="item.private"
 						class="hover:scale-110 hover:text-red-600 text-default-font/50 transition-opacity"
 						>X</span
 					>
