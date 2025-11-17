@@ -2,7 +2,6 @@ import { createAdapter } from "@socket.io/redis-streams-adapter";
 import express from "express";
 import helmet from "helmet";
 import { createServer } from "http";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import Redis from "ioredis";
 import { join } from "path";
 import { Server } from "socket.io";
@@ -83,6 +82,8 @@ const main = async () => {
       `PROXY: Creating proxy for client ${config.server.clientProxy}`
     );
     const { instrument } = await import("@socket.io/admin-ui");
+    const { createProxyMiddleware } = await import("http-proxy-middleware");
+
     const middleWareProxy = createProxyMiddleware({
       target: config.server.clientProxy,
       ws: true,
