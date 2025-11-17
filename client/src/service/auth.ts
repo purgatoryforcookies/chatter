@@ -41,7 +41,6 @@ export const useAuth = () => {
 	};
 
 	const logout = () => {
-		localStorage.removeItem("session_r");
 		if (oidc.value?.isUserLoggedIn) {
 			return oidc.value.logout({ redirectTo: "current page" });
 		}
@@ -59,7 +58,6 @@ export const useAuth = () => {
 		try {
 			if (oidc.value?.isUserLoggedIn) {
 				const tokens = await oidc.value.getTokens();
-				localStorage.removeItem("session_r");
 				auth.token = tokens.accessToken;
 				return tokens.accessToken;
 			}
