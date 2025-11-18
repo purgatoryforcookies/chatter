@@ -7,7 +7,10 @@
     "test": "echo tests disabled",
     "dev": "nodemon -L -e ts -r dotenv/config",
     "build": "tsc",
-    "postbuild": "cp -a src/service/crt/ dist/server/src/service/crt/"
+    "postbuild": "npm run copyCerts && npm run copyMigrations",
+    "copyCerts": "cp -a src/service/crt/ dist/server/src/service/crt/",
+    "copyMigrations": "cp -a migrations dist/server/migrations/",
+    "migrate": "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB} node-pg-migrate -j sql"
   },
   "author": "",
   "license": "ISC",
@@ -20,19 +23,20 @@
     "@types/node": "^22.18.13",
     "@types/pg": "^8.15.6",
     "dotenv": "^17.2.3",
+    "http-proxy-middleware": "^3.0.5",
     "jest": "^30.2.0",
     "nodemon": "^3.1.10",
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
-    "http-proxy-middleware": "^3.0.5"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@socket.io/redis-streams-adapter": "^0.2.2",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "ioredis": "^5.8.2",
-    "jose": "^6.1.1",
+    "jose": "^6.1.2",
+    "node-pg-migrate": "^8.0.3",
     "pg": "^8.16.3",
     "socket.io": "^4.8.1",
     "zod": "^4.1.12"

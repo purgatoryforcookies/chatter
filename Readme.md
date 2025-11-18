@@ -23,6 +23,8 @@ Supports both anonymous and registered users.
 
 ## Development
 
+### Getting started
+
 0. Fork the repository
 1. Create 2x .env files following the examples provided
 
@@ -45,6 +47,11 @@ Locally exposed ports
 | 6379 | redis |
 | 5432 | postgres |
 | 3000 | chatter |
+
+### Migrations
+
+1. `cd server && npm run migrate create {migration name}`
+2. `cd server && npm run migrate up` || `make migrate` || `docker compose -f docker-compose.dev.yaml run server npm run migrate up`
 
 ## Deployment
 

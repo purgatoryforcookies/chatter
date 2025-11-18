@@ -6,7 +6,6 @@ import Redis from "ioredis";
 import { join } from "path";
 import { Server } from "socket.io";
 import { config } from "./src/config";
-import { socketIoAuth } from "./src/middleware/auth";
 import { globalErrorHandlerRest } from "./src/middleware/error";
 import apiRouter from "./src/routers/private";
 import tokenRouter from "./src/routers/token";
@@ -62,12 +61,16 @@ app.use(function (_req, res, next) {
   );
   next();
 });
-io.use(socketIoAuth);
+
 registerWsRoutes(io, chatService);
 app.use("/api/token", tokenRouter);
 app.use("/api", apiRouter);
 
-app.get("/hello", (_req, res) => {
+app.get("/hello", async (_req, res) => {
+  if (await chatService.hasPendingMigrations()) {
+    return res.status(503);
+  }
+
   res.status(200).send("Hello");
 });
 
@@ -104,6 +107,8 @@ const main = async () => {
   }
 
   app.use(globalErrorHandlerRest);
+
+  await chatService.hasPendingMigrations();
 
   server.listen(config.server.port, async () => {
     console.log(

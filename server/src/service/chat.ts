@@ -1,3 +1,5 @@
+import { readdir } from "fs/promises";
+import { join } from "path";
 import { UserType } from "../../../types";
 import { ForbiddenError } from "../errors";
 import { Dao } from "./dao";
@@ -73,5 +75,37 @@ export class ChatService {
    */
   createUser(sub: string, username: string, type: UserType = "normal") {
     return this.dao.createUser(sub, username, type);
+  }
+
+  async hasPendingMigrations() {
+    try {
+      const migrations = await readdir(
+        join(__dirname, "..", "..", "migrations")
+      );
+
+      const latestInDb = await this.dao.getLatestMigration();
+      if (!latestInDb) {
+        throw new Error("Migration error, no files in database");
+      }
+
+      if (migrations.length === latestInDb.length) {
+        console.log("No migrations pending");
+        return false;
+      }
+
+      const withoutExtensions = migrations.map((i) => i.replace(".sql", ""));
+
+      const missing = withoutExtensions.filter((item) =>
+        latestInDb.find((i) => i.name !== item)
+      );
+
+      console.log(`** ${missing.length} migrations pending:`);
+      missing.forEach((item) => console.log(`** ${item}.sql`));
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   }
 }

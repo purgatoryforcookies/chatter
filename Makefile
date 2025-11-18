@@ -3,7 +3,7 @@ include infra/.env
 include client/.env
 include ./.env
 
-build:
+d-build:
 	docker build -t chatter --build-arg VITE_AUTH_DOMAIN=${VITE_AUTH_DOMAIN} --build-arg VITE_AUTH_CLIENT_ID=${VITE_AUTH_CLIENT_ID} .
 
 pushecr:
@@ -11,7 +11,7 @@ pushecr:
 	docker tag chatter:latest ${AWS_ACCOUNT}.dkr.ecr.eu-west-1.amazonaws.com/${AWS_ECR_TARGET_REPOSITORY}:latest
 	docker push ${AWS_ACCOUNT}.dkr.ecr.eu-west-1.amazonaws.com/${AWS_ECR_TARGET_REPOSITORY}:latest
 
-buildaws: build pushecr
+buildaws: d-build pushecr
 
 deployinfra:
 	cd infra && npx cdk deploy --all --require-approval never
@@ -27,3 +27,5 @@ endpoints:
 
 dev:
 	docker compose -f docker-compose.dev.yaml up --build
+migrate:
+	docker compose -f docker-compose.dev.yaml run server npm run migrate up
