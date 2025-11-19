@@ -17,6 +17,7 @@
         "test",
         "types.ts",
         "../types.ts",
-        "main.ts"
+        "main.ts",
+        "migrate.ts"
     ]
 }

@@ -59,7 +59,7 @@ export class RdsStack extends Stack {
       }),
       instanceType: InstanceType.of(
         InstanceClass.BURSTABLE3,
-        InstanceSize.MEDIUM
+        InstanceSize.SMALL
       ),
       credentials: {
         username: this.dbSecret.secretValueFromJson("username").toString(),
