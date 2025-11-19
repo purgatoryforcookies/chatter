@@ -1,11 +1,14 @@
 import z from "zod";
 import { CustomSocketServer } from "../types";
+import { socketIoAuth } from "./middleware/auth";
 import { ChatService } from "./service/chat";
 
 export const registerWsRoutes = (
   io: CustomSocketServer,
   service: ChatService
 ) => {
+  io.use(socketIoAuth);
+
   io.on("connection", async (socket) => {
     console.log(`Client ${socket.id} connected`);
 

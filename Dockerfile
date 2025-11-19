@@ -36,9 +36,3 @@ USER node
 
 CMD [ "node", "dist/server/main.js" ]
 # CMD [ "sleep", "infinity" ]
-
-
-
-
-
-

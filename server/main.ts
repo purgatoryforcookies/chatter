@@ -2,12 +2,10 @@ import { createAdapter } from "@socket.io/redis-streams-adapter";
 import express from "express";
 import helmet from "helmet";
 import { createServer } from "http";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import Redis from "ioredis";
 import { join } from "path";
 import { Server } from "socket.io";
 import { config } from "./src/config";
-import { socketIoAuth } from "./src/middleware/auth";
 import { globalErrorHandlerRest } from "./src/middleware/error";
 import apiRouter from "./src/routers/private";
 import tokenRouter from "./src/routers/token";
@@ -63,12 +61,16 @@ app.use(function (_req, res, next) {
   );
   next();
 });
-io.use(socketIoAuth);
+
 registerWsRoutes(io, chatService);
 app.use("/api/token", tokenRouter);
 app.use("/api", apiRouter);
 
-app.get("/hello", (_req, res) => {
+app.get("/hello", async (_req, res) => {
+  if (await chatService.hasPendingMigrations()) {
+    return res.status(503);
+  }
+
   res.status(200).send("Hello");
 });
 
@@ -83,6 +85,8 @@ const main = async () => {
       `PROXY: Creating proxy for client ${config.server.clientProxy}`
     );
     const { instrument } = await import("@socket.io/admin-ui");
+    const { createProxyMiddleware } = await import("http-proxy-middleware");
+
     const middleWareProxy = createProxyMiddleware({
       target: config.server.clientProxy,
       ws: true,
@@ -103,6 +107,8 @@ const main = async () => {
   }
 
   app.use(globalErrorHandlerRest);
+
+  await chatService.hasPendingMigrations();
 
   server.listen(config.server.port, async () => {
     console.log(

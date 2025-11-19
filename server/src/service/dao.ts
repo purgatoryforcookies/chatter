@@ -5,6 +5,7 @@ import { pool } from "../config";
 
 export class Dao {
   private pool = pool;
+  private migrationsTableName = "pgmigrations";
 
   constructor() {}
 
@@ -209,5 +210,26 @@ export class Dao {
   }
   delete() {
     throw new Error("not implemented");
+  }
+
+  async getLatestMigration() {
+    try {
+      const res = await this.pool.query<{
+        id: number;
+        name: string;
+        run_on: Date;
+      }>(
+        `
+      SELECT id, name, run_on
+      FROM ${this.migrationsTableName}
+      ORDER BY run_on DESC;
+      `
+      );
+
+      return res.rows;
+    } catch (error) {
+      console.log(error);
+      return;
+    }
   }
 }

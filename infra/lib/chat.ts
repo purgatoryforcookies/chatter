@@ -148,7 +148,7 @@ export class ChatStack extends Stack {
       },
       cpu: 256,
       memoryLimitMiB: 512,
-      desiredCount: 2,
+      desiredCount: 1,
       publicLoadBalancer: true,
     });
 

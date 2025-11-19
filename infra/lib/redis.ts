@@ -30,7 +30,7 @@ export class RedisStack extends Stack {
     this.cacheSecurityGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     this.cache = new CfnServerlessCache(this, "ServerlessCache", {
-      engine: "redis",
+      engine: "valkey",
       serverlessCacheName: "ChatAppCache",
       securityGroupIds: [this.cacheSecurityGroup.securityGroupId],
       subnetIds: stacks.vpc.privateSubnets.map((i) => i.subnetId),
