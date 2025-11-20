@@ -30,4 +30,11 @@ export const config = {
   rds: {
     databaseName: "chat",
   },
+  ecs: {
+    tslCertArn: getenv("TLS_CERT_ARN"),
+  },
+  route53: {
+    hostedZoneId: getenv("AWS_HOSTED_ZONE_ID"),
+    zoneName: getenv("AWS_HOSTED_ZONE_NAME"),
+  },
 };

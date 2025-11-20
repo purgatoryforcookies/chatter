@@ -1,8 +1,10 @@
 import * as cdk from "aws-cdk-lib";
+import { BastionStack } from "../lib/bastion";
 import { ChatStack } from "../lib/chat";
 import { EcrStack } from "../lib/ecr";
 import { RdsStack } from "../lib/rds";
 import { RedisStack } from "../lib/redis";
+import { Route53Stack } from "../lib/route53";
 import { VpcStack } from "../lib/vpc";
 
 export type StackOptions = {
@@ -26,6 +28,11 @@ const rds = new RdsStack(app, "RdsStack", options, {
   vpc: vpcStack.vpc,
 });
 
+const bastion = new BastionStack(app, "BastionStack", options, {
+  rdsSg: rds.dbSG,
+  vpc: vpcStack.vpc,
+});
+
 const chatstack = new ChatStack(app, "Chatstack", options, {
   vpc: vpcStack.vpc,
   ecr,
@@ -39,5 +46,11 @@ const chatstack = new ChatStack(app, "Chatstack", options, {
   cacheSG: cache.cacheSecurityGroup,
 });
 
+const route53 = new Route53Stack(app, "Route53Stack", options, {
+  ecs: chatstack.ecs,
+});
+
 chatstack.addDependency(rds);
 chatstack.addDependency(cache);
+route53.addDependency(chatstack);
+bastion.addDependency(rds);
