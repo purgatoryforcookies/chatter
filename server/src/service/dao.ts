@@ -74,7 +74,7 @@ export class Dao {
     return false;
   }
 
-  async hasPermission(user: string, room: string) {
+  async existsInPermissions(user: string, room: string) {
     const res = await this.pool.query<{ exists: boolean }>(
       `
       SELECT EXISTS( SELECT 1

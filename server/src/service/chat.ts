@@ -31,7 +31,7 @@ export class ChatService {
     throw new ForbiddenError();
   }
   async deleteRoom(user: string, room: string) {
-    if (await this.dao.hasPermission(user, room)) {
+    if (await this.dao.existsInPermissions(user, room)) {
       return this.dao.deleteRoom(room);
     }
     throw new ForbiddenError();
@@ -41,7 +41,7 @@ export class ChatService {
     if (await this.dao.isPublicRoom(room)) {
       return true;
     }
-    if (await this.dao.hasPermission(user, room)) {
+    if (await this.dao.existsInPermissions(user, room)) {
       return true;
     }
     return false;
