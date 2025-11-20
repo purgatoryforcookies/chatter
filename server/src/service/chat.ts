@@ -89,7 +89,7 @@ export class ChatService {
       }
 
       if (migrations.length === latestInDb.length) {
-        console.log("No migrations pending");
+        console.log("Chat service migrations are up to date!");
         return false;
       }
 
