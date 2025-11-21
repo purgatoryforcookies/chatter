@@ -7,8 +7,8 @@ const config: Config = {
   },
   testRegex: "((\\.|/)(test))\\.(ts)?$",
   testEnvironment: "node",
-  extensionsToTreatAsEsm: [".ts"],
   setupFiles: ["<rootDir>/test/setup-tests.ts"],
+  coveragePathIgnorePatterns: ["<rootDir>/test", "<rootDir>/src/errors.ts"],
 };
 
 export default config;
