@@ -108,4 +108,8 @@ export class ChatService {
       return false;
     }
   }
+
+  async close() {
+    await this.dao.close();
+  }
 }

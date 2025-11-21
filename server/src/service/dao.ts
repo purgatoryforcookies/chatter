@@ -144,7 +144,7 @@ export class Dao {
         throw new Error("Database did not return");
       }
 
-      for (const user of [owner, ...participants]) {
+      for (const user of new Set([owner, ...participants])) {
         await client.query(
           `
             INSERT INTO permission (room, user_id)
@@ -231,5 +231,8 @@ export class Dao {
       console.log(error);
       return;
     }
+  }
+  async close() {
+    await this.pool.end();
   }
 }
