@@ -57,6 +57,6 @@ export type DbUser = {
 export type DbPermission = {
   id: number;
   room: string;
-  user: number;
+  user_id: string;
   created: Date;
 };
