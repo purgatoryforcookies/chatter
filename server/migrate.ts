@@ -17,12 +17,17 @@ export const runMigrations = async () => {
       direction: "up",
       logger: logger,
     });
-  } catch (error) {
-    logger.error(error);
-    exit(1);
   } finally {
     connection.release();
   }
-  exit();
 };
-runMigrations();
+
+if (require.main === module) {
+  try {
+    runMigrations();
+  } catch (error) {
+    logger.error(error);
+    exit(1);
+  }
+  exit();
+}

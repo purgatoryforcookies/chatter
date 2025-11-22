@@ -8,6 +8,10 @@ describe("Chat service", () => {
   const dao = new TestDao();
   const chat = new ChatService();
 
+  beforeAll(async () => {
+    await dao.clear();
+  });
+
   afterAll(async () => {
     await chat.close();
   });
