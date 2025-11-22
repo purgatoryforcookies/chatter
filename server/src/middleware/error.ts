@@ -1,6 +1,9 @@
 import type { ErrorRequestHandler } from "express";
 import { JWSSignatureVerificationFailed } from "jose/errors";
+import pino from "pino";
 import { BadRequestError, ForbiddenError, NotFoundError } from "../errors";
+
+const logger = pino({ name: "error-handler" });
 
 export const globalErrorHandlerRest: ErrorRequestHandler = (
   err,
@@ -26,6 +29,7 @@ export const globalErrorHandlerRest: ErrorRequestHandler = (
     res.status(403).json({ message: err.message });
     return;
   }
+  logger.error(err, "Unexpected error");
 
   res.status(500).json({ message: "Unexpected error occured." });
 };

@@ -1,7 +1,10 @@
 import { randomUUID } from "crypto";
 import { PoolClient } from "pg";
+import pino from "pino";
 import { ChatMessage, DbRoom, DbUser, UserType } from "../../../types";
 import { pool } from "../config";
+
+const logger = pino({ name: "dao" });
 
 export class Dao {
   private pool = pool;
@@ -228,7 +231,7 @@ export class Dao {
 
       return res.rows;
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       return;
     }
   }

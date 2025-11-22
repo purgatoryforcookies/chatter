@@ -4,9 +4,12 @@ import helmet from "helmet";
 import { createServer } from "http";
 import Redis from "ioredis";
 import { join } from "path";
+import pino from "pino";
 import { Server } from "socket.io";
 import { config } from "./src/config";
+import { registerDevelopmentRoutes } from "./src/dev";
 import { globalErrorHandlerRest } from "./src/middleware/error";
+import { globalHeaders } from "./src/middleware/globalHeaders";
 import apiRouter from "./src/routers/private";
 import tokenRouter from "./src/routers/token";
 import { User, userSchema } from "./src/schema";
@@ -14,6 +17,8 @@ import { AuthService } from "./src/service/auth";
 import { ChatService } from "./src/service/chat";
 import { registerWsRoutes } from "./src/wsRouter";
 import { CustomSocketServer } from "./types";
+
+const logger = pino({ name: "main" });
 
 const app = express();
 const server = createServer(app);
@@ -53,14 +58,7 @@ app.use(
     xFrameOptions: false,
   })
 );
-
-app.use(function (_req, res, next) {
-  res.header(
-    "Access-Control-Allow-Origin",
-    "https://key.purgatoryforcookies.com, https://chatter.purgatoryforcookies.com"
-  );
-  next();
-});
+app.use(globalHeaders);
 
 registerWsRoutes(io, chatService);
 app.use("/api/token", tokenRouter);
@@ -76,32 +74,7 @@ app.get("/hello", async (_req, res) => {
 
 const main = async () => {
   if (config.isDev) {
-    if (!config.server.clientProxy) {
-      throw new Error(
-        "Development mode needs to know where to proxy client requests! CLIENT_PROXY?"
-      );
-    }
-    console.log(
-      `PROXY: Creating proxy for client ${config.server.clientProxy}`
-    );
-    const { instrument } = await import("@socket.io/admin-ui");
-    const { createProxyMiddleware } = await import("http-proxy-middleware");
-
-    const middleWareProxy = createProxyMiddleware({
-      target: config.server.clientProxy,
-      ws: true,
-      changeOrigin: true,
-    });
-    app.use(
-      "/socketio-panel",
-      express.static(
-        join(__dirname, "node_modules/@socket.io/admin-ui/ui/dist")
-      )
-    );
-    app.use("/", middleWareProxy);
-    instrument(io, {
-      auth: false,
-    });
+    await registerDevelopmentRoutes(app, io);
   } else {
     app.use("/", express.static(join(__dirname, "client")));
   }
@@ -111,15 +84,15 @@ const main = async () => {
   await chatService.hasPendingMigrations();
 
   server.listen(config.server.port, async () => {
-    console.log(
+    logger.info(
       `Server running in ${config.server.port}. Redis: ${redisClient.status}`
     );
 
     redisClient.on("ready", () => {
-      console.log(`Redis: ${redisClient.status}`);
+      logger.info(`Redis: ${redisClient.status}`);
     });
     redisClient.on("error", (error) => {
-      console.log(`Redis: ${redisClient.status}, error: ${error.message}`);
+      logger.error(`Redis: ${redisClient.status}, error: ${error.message}`);
     });
   });
 };

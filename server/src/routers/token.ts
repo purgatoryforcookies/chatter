@@ -91,7 +91,6 @@ router.get("/me", async (req, res) => {
         res(user);
         return;
       }
-      console.log("Is first party token");
       const user = await authService.verifyFirstPartyToken(parsedToken);
 
       res(user);

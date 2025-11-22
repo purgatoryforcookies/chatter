@@ -1,8 +1,11 @@
 import * as jose from "jose";
+import pino from "pino";
 import z from "zod";
 import { UserRole } from "../../../types";
 import { ForbiddenError } from "../errors";
 import { User } from "../schema";
+
+const logger = pino({ name: "auth-service" });
 
 export type AuthConfig<T> = {
   issuer: string;
@@ -33,7 +36,7 @@ export class AuthService<T extends User> {
    * information from 3rd party auth provider.
    */
   async init() {
-    console.log("Initializing auth service");
+    logger.info("Initializing auth service");
     const { issuer } = this.config;
 
     const configEndpoint: string[] = [issuer];
@@ -54,7 +57,7 @@ export class AuthService<T extends User> {
         cooldownDuration: 1200000,
       });
     } catch (error) {
-      console.log(error);
+      logger.error(error);
     }
   }
   /**
@@ -63,7 +66,7 @@ export class AuthService<T extends User> {
    */
   async verify(headerToken: string) {
     if (!this.jwks) {
-      console.log("Auth service not initialized for verify");
+      logger.info("Auth service not initialized for verify");
       await this.init();
     }
     if (!this.jwks) {

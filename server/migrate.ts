@@ -1,10 +1,13 @@
 import { runner } from "node-pg-migrate";
 import { join } from "path";
+import pino from "pino";
 import { exit } from "process";
 import { pool } from "./src/config";
 
+const logger = pino({ name: "migrations" });
+
 export const runMigrations = async () => {
-  console.log("Running migrations");
+  logger.info("Running migrations");
   const connection = await pool.connect();
   try {
     await runner({
@@ -12,9 +15,10 @@ export const runMigrations = async () => {
       migrationsTable: "pgmigrations",
       dir: join(__dirname, "migrations"),
       direction: "up",
+      logger: logger,
     });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     exit(1);
   } finally {
     connection.release();

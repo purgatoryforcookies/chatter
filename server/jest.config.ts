@@ -9,6 +9,7 @@ const config: Config = {
   testEnvironment: "node",
   setupFiles: ["<rootDir>/test/setup-tests.ts"],
   coveragePathIgnorePatterns: ["<rootDir>/test", "<rootDir>/src/errors.ts"],
+  watchPathIgnorePatterns: ["<rootDir>/coverage"],
 };
 
 export default config;

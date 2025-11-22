@@ -1,8 +1,11 @@
 import { readdir } from "fs/promises";
 import { join } from "path";
+import pino from "pino";
 import { UserType } from "../../../types";
 import { ForbiddenError } from "../errors";
 import { Dao } from "./dao";
+
+const logger = pino({ name: "chat-service" });
 
 export class ChatService {
   private dao = new Dao();
@@ -89,7 +92,7 @@ export class ChatService {
       }
 
       if (migrations.length === latestInDb.length) {
-        console.log("Chat service migrations are up to date!");
+        logger.info("Migrations are up to date!");
         return false;
       }
 
@@ -99,12 +102,12 @@ export class ChatService {
         latestInDb.find((i) => i.name !== item)
       );
 
-      console.log(`** ${missing.length} migrations pending:`);
-      missing.forEach((item) => console.log(`** ${item}.sql`));
+      logger.info(`** ${missing.length} migrations pending:`);
+      missing.forEach((item) => logger.info(`** ${item}.sql`));
 
       return true;
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       return false;
     }
   }

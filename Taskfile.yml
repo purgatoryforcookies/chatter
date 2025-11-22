@@ -2,6 +2,7 @@
 
 version: "3"
 
+# Note: Overrides exist in docker-compose.dev.yaml
 dotenv: [".env", "client/.env", "infra/.env", "server/.env"]
 
 tasks:
@@ -28,7 +29,7 @@ tasks:
       - docker compose -f docker-compose.dev.yaml up --build
   dev-db:
     cmds:
-      - docker compose -f docker-compose.dev.yaml up db --build
+      - docker compose -f docker-compose.dev.yaml up db redis --build
   migrate:
     cmds:
       - docker compose -f docker-compose.dev.yaml run server npm run migrate:local
