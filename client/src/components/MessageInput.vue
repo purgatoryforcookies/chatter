@@ -39,7 +39,7 @@ const placeholder = ref("");
 watch(
 	() => state.selectedRoom,
 	(room) => {
-		placeholder.value = state.selectedRoom?.name ? `Write to #${state.selectedRoom?.name}` : "Select a room!";
+		placeholder.value = room ? `Write to #${room.name}` : "Select a room!";
 		input.value?.focus();
 	}
 );

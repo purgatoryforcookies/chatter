@@ -44,6 +44,8 @@ jobs:
     services:
       db:
         image: postgres:17
+        ports:
+          - 5432:5432
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -53,6 +55,10 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
 
     strategy:
       matrix:
@@ -72,14 +78,23 @@ jobs:
         working-directory: ./server
         run: |
           npm ci
-          npm run migrate:local
           ${{ matrix.command }}
         env:
+            DEVELOPMENT: false
+            SERVER_PORT: 3000
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
             POSTGRES_DB: postgres
-            POSTGRES_HOST: db
+            POSTGRES_HOST: localhost
             POSTGRES_PORT: 5432
+            REDIS_URL: localhost
+            JWT_SECRET: kissa
+            JWT_EXP: 3h
+            JWT_SECRET_REFRESH: koira
+            JWT_EXP_REFRESH: 7d
+            JWT_ISSUER: "https://local.purgatoryforcookies.com"
+            AUTH_ISSUER_URI: https://test.remote.com
+            AUTH_AUDIENCE: chat
 
   docker-build:
     runs-on: ubuntu-22.04
