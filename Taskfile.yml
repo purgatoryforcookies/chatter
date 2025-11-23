@@ -1,0 +1,55 @@
+# https://taskfile.dev
+
+version: "3"
+
+# Note: Overrides exist in docker-compose.dev.yaml
+dotenv: [".env", "client/.env", "infra/.env", "server/.env"]
+
+tasks:
+  d-build:
+    cmds:
+      - docker build -t chatter --build-arg VITE_AUTH_DOMAIN=${VITE_AUTH_DOMAIN} --build-arg VITE_AUTH_CLIENT_ID=${VITE_AUTH_CLIENT_ID} .
+  pushecr:
+    cmds:
+      - aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT}.dkr.ecr.eu-west-1.amazonaws.com
+      - docker tag chatter:latest ${AWS_ACCOUNT}.dkr.ecr.eu-west-1.amazonaws.com/${AWS_ECR_TARGET_REPOSITORY}:${IMAGE_TAG}
+      - docker push ${AWS_ACCOUNT}.dkr.ecr.eu-west-1.amazonaws.com/${AWS_ECR_TARGET_REPOSITORY}:${IMAGE_TAG}
+  buildaws:
+    cmds:
+      - task: d-build
+      - task: pushecr
+  deployinfra:
+    cmds:
+      - cd infra && npx cdk deploy --all --require-approval never
+  destroyinfra:
+    cmds:
+      - cd infra && npx cdk destroy --all --force
+  dev:
+    cmds:
+      - docker compose -f docker-compose.dev.yaml up --build
+  dev-db:
+    cmds:
+      - docker compose -f docker-compose.dev.yaml up db redis --build
+  migrate:
+    cmds:
+      - docker compose -f docker-compose.dev.yaml build
+      - docker compose -f docker-compose.dev.yaml run server npm run migrate:local
+  bastion:
+    vars:
+      BASTION_ID:
+        sh: |
+          aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=rds-bastion-ec2" \
+            --query "Reservations[].Instances[].InstanceId" \
+            --output text
+      AWS_DB_HOST:
+        sh: |
+          aws rds describe-db-instances \
+          --query "DBInstances[].Endpoint.Address" \
+          --output text
+    cmds:
+      - |
+        aws ssm start-session \
+          --target {{.BASTION_ID}} \
+          --document-name AWS-StartPortForwardingSessionToRemoteHost \
+          --parameters "portNumber=5432,localPortNumber=5432,host={{.AWS_DB_HOST}}"

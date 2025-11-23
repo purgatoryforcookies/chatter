@@ -4,3 +4,4 @@ server/client
 client/dist
 server/dist
 .eslintcache
+coverage

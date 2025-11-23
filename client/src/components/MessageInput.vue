@@ -7,7 +7,7 @@
 					:placeholder="placeholder"
 					class="w-full px-4 py-2 rounded-lg border border-neutral-border focus:outline-none focus:ring-1 focus:ring-brand-600 focus:border-transparent placeholder-neutral-300 text-neutral-500 bg-neutral-50"
 					:class="[loading ? 'animate-pulse' : '']"
-					:disabled="loading"
+					:disabled="loading || !state.selectedRoom"
 					ref="input"
 					autofocus
 				/>
@@ -34,12 +34,12 @@ const loading = ref<boolean>(false);
 const value = ref("");
 const input = useTemplateRef<HTMLInputElement>("input");
 
-const placeholder = ref(`Write to #${state.selectedRoom?.name}`);
+const placeholder = ref("");
 
 watch(
 	() => state.selectedRoom,
 	(room) => {
-		placeholder.value = `Write to #${room?.name}`;
+		placeholder.value = room ? `Write to #${room.name}` : "Select a room!";
 		input.value?.focus();
 	}
 );

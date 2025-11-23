@@ -12,11 +12,7 @@ import {
   SubnetType,
   Vpc,
 } from "aws-cdk-lib/aws-ec2";
-import { CfnServerlessCache } from "aws-cdk-lib/aws-elasticache";
-import { DatabaseInstance } from "aws-cdk-lib/aws-rds";
-import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 import { StackOptions } from "../bin";
-import { EcrStack } from "./ecr";
 
 export class BastionStack extends Stack {
   constructor(
@@ -25,12 +21,7 @@ export class BastionStack extends Stack {
     options: StackOptions,
     stacks: {
       vpc: Vpc;
-      ecr: EcrStack;
-      rds: DatabaseInstance;
       rdsSg: SecurityGroup;
-      rdsSecret: Secret;
-      cache: CfnServerlessCache;
-      cacheSG: SecurityGroup;
     },
     props?: StackProps
   ) {

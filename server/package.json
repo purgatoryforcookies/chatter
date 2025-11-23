@@ -4,7 +4,8 @@
   "description": "",
   "main": "main.ts",
   "scripts": {
-    "test": "echo tests disabled",
+    "test": "jest --forceExit",
+    "test:watch": "jest --watch --coverage",
     "dev": "nodemon -L -e ts -r dotenv/config",
     "build": "tsc",
     "postbuild": "npm run copyCerts && npm run copyMigrations",
@@ -37,8 +38,9 @@
     "helmet": "^8.1.0",
     "ioredis": "^5.8.2",
     "jose": "^6.1.2",
-    "node-pg-migrate": "^8.0.3",
+    "node-pg-migrate": "7.6.1",
     "pg": "^8.16.3",
+    "pino": "^10.1.0",
     "socket.io": "^4.8.1",
     "zod": "^4.1.12"
   }

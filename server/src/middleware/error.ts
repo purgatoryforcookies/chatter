@@ -1,6 +1,9 @@
 import type { ErrorRequestHandler } from "express";
-import { JWSSignatureVerificationFailed } from "jose/errors";
+import { JWSInvalid, JWSSignatureVerificationFailed } from "jose/errors";
+import pino from "pino";
 import { BadRequestError, ForbiddenError, NotFoundError } from "../errors";
+
+const logger = pino({ name: "error-handler" });
 
 export const globalErrorHandlerRest: ErrorRequestHandler = (
   err,
@@ -8,7 +11,7 @@ export const globalErrorHandlerRest: ErrorRequestHandler = (
   res,
   next
 ) => {
-  console.error(`Error from path ${req.url}`, err);
+  logger.debug(err, `Error from path ${req.url}`);
 
   if (err instanceof NotFoundError) {
     res.status(err.status).json({ message: err.message });
@@ -26,6 +29,11 @@ export const globalErrorHandlerRest: ErrorRequestHandler = (
     res.status(403).json({ message: err.message });
     return;
   }
+  if (err instanceof JWSInvalid) {
+    res.status(403).json({ message: err.message });
+    return;
+  }
+  logger.error(err, "Unexpected error");
 
   res.status(500).json({ message: "Unexpected error occured." });
 };

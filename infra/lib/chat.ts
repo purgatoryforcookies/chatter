@@ -1,4 +1,5 @@
 import { App, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 import { Port, SecurityGroup, SubnetType, Vpc } from "aws-cdk-lib/aws-ec2";
 import {
   Cluster,
@@ -6,6 +7,10 @@ import {
   Secret as EcsSecret,
 } from "aws-cdk-lib/aws-ecs";
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns";
+import {
+  ApplicationProtocol,
+  SslPolicy,
+} from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import {
   Effect,
   ManagedPolicy,
@@ -20,6 +25,7 @@ import { EcrStack } from "./ecr";
 
 export class ChatStack extends Stack {
   ecs: ApplicationLoadBalancedFargateService;
+  private containerPort = 3000;
 
   constructor(
     scope: App,
@@ -112,7 +118,6 @@ export class ChatStack extends Stack {
     this.ecs = new ApplicationLoadBalancedFargateService(this, "ChatService", {
       cluster,
       serviceName: `${options.env}-chat-service`,
-      loadBalancerName: `${options.env}-chat-alb`,
       securityGroups: [ecsSG],
       taskSubnets: { subnetType: SubnetType.PRIVATE_WITH_EGRESS },
       taskImageOptions: {
@@ -121,7 +126,7 @@ export class ChatStack extends Stack {
           stacks.ecr.repo,
           config.ecr.tag
         ),
-        containerPort: 3000,
+        containerPort: this.containerPort,
         containerName: `${options.env}-chat-container`,
         secrets: {
           POSTGRES_PASSWORD: EcsSecret.fromSecretsManager(
@@ -136,7 +141,7 @@ export class ChatStack extends Stack {
           POSTGRES_PORT: stacks.rds.port,
           POSTGRES_HOST: stacks.rds.host,
           POSTGRES_DB: config.rds.databaseName,
-          SERVER_PORT: "3000",
+          SERVER_PORT: this.containerPort.toString(),
           DEVELOPMENT: "false",
           JWT_EXP: "1h",
           JWT_EXP_REFRESH: "7d",
@@ -150,6 +155,14 @@ export class ChatStack extends Stack {
       memoryLimitMiB: 512,
       desiredCount: 1,
       publicLoadBalancer: true,
+      protocol: ApplicationProtocol.HTTPS,
+      redirectHTTP: true,
+      certificate: Certificate.fromCertificateArn(
+        this,
+        "chatterCert",
+        config.ecs.tslCertArn
+      ),
+      sslPolicy: SslPolicy.RECOMMENDED,
     });
 
     this.ecs.targetGroup.configureHealthCheck({

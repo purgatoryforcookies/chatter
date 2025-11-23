@@ -1,8 +1,11 @@
 import { readdir } from "fs/promises";
 import { join } from "path";
+import pino from "pino";
 import { UserType } from "../../../types";
 import { ForbiddenError } from "../errors";
 import { Dao } from "./dao";
+
+const logger = pino({ name: "chat-service" });
 
 export class ChatService {
   private dao = new Dao();
@@ -31,7 +34,7 @@ export class ChatService {
     throw new ForbiddenError();
   }
   async deleteRoom(user: string, room: string) {
-    if (await this.dao.hasPermission(user, room)) {
+    if (await this.dao.existsInPermissions(user, room)) {
       return this.dao.deleteRoom(room);
     }
     throw new ForbiddenError();
@@ -41,7 +44,7 @@ export class ChatService {
     if (await this.dao.isPublicRoom(room)) {
       return true;
     }
-    if (await this.dao.hasPermission(user, room)) {
+    if (await this.dao.existsInPermissions(user, room)) {
       return true;
     }
     return false;
@@ -89,7 +92,6 @@ export class ChatService {
       }
 
       if (migrations.length === latestInDb.length) {
-        console.log("No migrations pending");
         return false;
       }
 
@@ -99,13 +101,17 @@ export class ChatService {
         latestInDb.find((i) => i.name !== item)
       );
 
-      console.log(`** ${missing.length} migrations pending:`);
-      missing.forEach((item) => console.log(`** ${item}.sql`));
+      logger.info(`** ${missing.length} migrations pending:`);
+      missing.forEach((item) => logger.info(`** ${item}.sql`));
 
       return true;
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       return false;
     }
+  }
+
+  async close() {
+    await this.dao.close();
   }
 }

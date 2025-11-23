@@ -1,6 +1,9 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { Pool } from "pg";
+import pino from "pino";
+
+const logger = pino({ name: "config" });
 
 function getenv(key: string, fallthrough?: false): string;
 function getenv(key: string, fallthrough: true): string | null;
@@ -11,9 +14,7 @@ function getenv(key: string, fallthrough?: boolean): string | null {
     return env;
   }
   if (fallthrough) {
-    console.log(
-      `Environment key ${key} is not set. This was specifically allowed.`
-    );
+    logger.info(`Key ${key} is not set. This was specifically allowed.`);
     return null;
   }
   throw new Error(`Variable ${key} is undefined`);
@@ -52,6 +53,10 @@ const config = {
 const pool = new Pool({
   ...config.db,
   min: 1,
+  query_timeout: 4000,
+  log(...messages) {
+    messages.forEach((m) => logger.info);
+  },
   max: 10,
   ssl: config.isInEcs
     ? {

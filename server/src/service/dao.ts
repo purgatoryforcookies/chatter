@@ -1,7 +1,10 @@
 import { randomUUID } from "crypto";
 import { PoolClient } from "pg";
+import pino from "pino";
 import { ChatMessage, DbRoom, DbUser, UserType } from "../../../types";
 import { pool } from "../config";
+
+const logger = pino({ name: "dao" });
 
 export class Dao {
   private pool = pool;
@@ -74,7 +77,7 @@ export class Dao {
     return false;
   }
 
-  async hasPermission(user: string, room: string) {
+  async existsInPermissions(user: string, room: string) {
     const res = await this.pool.query<{ exists: boolean }>(
       `
       SELECT EXISTS( SELECT 1
@@ -144,7 +147,7 @@ export class Dao {
         throw new Error("Database did not return");
       }
 
-      for (const user of [owner, ...participants]) {
+      for (const user of new Set([owner, ...participants])) {
         await client.query(
           `
             INSERT INTO permission (room, user_id)
@@ -228,8 +231,11 @@ export class Dao {
 
       return res.rows;
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       return;
     }
+  }
+  async close() {
+    await this.pool.end();
   }
 }

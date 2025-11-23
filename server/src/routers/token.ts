@@ -9,9 +9,11 @@ import { User } from "../schema";
 const router = Router();
 
 const getNewTokenRequest = {
-  body: z.object({
-    username: z.string().optional(),
-  }),
+  body: z
+    .object({
+      username: z.string(),
+    })
+    .optional(),
 };
 
 router.post("/", validateRequest(getNewTokenRequest), async (req, res) => {
@@ -91,7 +93,6 @@ router.get("/me", async (req, res) => {
         res(user);
         return;
       }
-      console.log("Is first party token");
       const user = await authService.verifyFirstPartyToken(parsedToken);
 
       res(user);

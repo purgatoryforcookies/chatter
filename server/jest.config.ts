@@ -2,13 +2,16 @@ import type { Config } from "jest";
 
 const config: Config = {
   transform: {
-    "^.+\\.ts?$": "ts-jest",
-    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.json", useESM: true }],
+    "^.+\\.(js|ts)?$": ["ts-jest", { tsconfig: "tsconfig.json" }],
   },
   testRegex: "((\\.|/)(test))\\.(ts)?$",
   testEnvironment: "node",
-  extensionsToTreatAsEsm: [".ts"],
   setupFiles: ["<rootDir>/test/setup-tests.ts"],
+  globalSetup: "<rootDir>/test/global-setup.ts",
+  globalTeardown: "<rootDir>/test/global-teardown.ts",
+  coveragePathIgnorePatterns: ["<rootDir>/test", "<rootDir>/src/errors.ts"],
+  watchPathIgnorePatterns: ["<rootDir>/coverage", "<rootDir>/node_modules"],
+  transformIgnorePatterns: ["node_modules/(?!(jose)/)"],
 };
 
 export default config;

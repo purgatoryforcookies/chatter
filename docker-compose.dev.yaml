@@ -20,6 +20,10 @@ services:
     command: npm run dev
     env_file:
       - ./server/.env
+    environment:
+      POSTGRES_HOST: db
+      REDIS_URL: redis
+
     volumes:
       - ./server/:/app/server
       - binserver:/app/server/node_modules

@@ -1,8 +1,10 @@
 import { RequestHandler } from "express";
+import pino from "pino";
 import z from "zod";
 import { authService } from "../../main";
 import { CustomSocketServer } from "../../types";
 import { ForbiddenError } from "../errors";
+const logger = pino({ name: "auth-middleware" });
 
 type MiddlewareFunction = Parameters<CustomSocketServer["use"]>[0];
 
@@ -12,7 +14,7 @@ export const restAuth: RequestHandler = async (req, res, next) => {
   const parsedToken = z.string().optional().parse(token);
 
   if (!parsedToken) {
-    console.log(`No token provided. Path: ${req.url}`);
+    logger.error(`No token provided. Path: ${req.url}`);
     throw new ForbiddenError("Authorization header is missing");
   }
 
@@ -64,7 +66,7 @@ export const socketIoAuth: MiddlewareFunction = async (socket, next) => {
       }
     }
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return next(new ForbiddenError());
   }
 

@@ -1,7 +1,10 @@
+import pino from "pino";
 import z from "zod";
 import { CustomSocketServer } from "../types";
 import { socketIoAuth } from "./middleware/auth";
 import { ChatService } from "./service/chat";
+
+const logger = pino({ name: "ws-router" });
 
 export const registerWsRoutes = (
   io: CustomSocketServer,
@@ -10,12 +13,12 @@ export const registerWsRoutes = (
   io.use(socketIoAuth);
 
   io.on("connection", async (socket) => {
-    console.log(`Client ${socket.id} connected`);
+    logger.info(`Client ${socket.id} connected`);
 
     try {
       const user = await service.getUser(socket.data.sub);
       if (!user) {
-        console.log("No user found!");
+        logger.error("No user found!");
         return;
       }
       const allSockets = await io.fetchSockets();
@@ -26,7 +29,7 @@ export const registerWsRoutes = (
       socket.emit("hello", users);
       socket.broadcast.emit("userConnected", user);
     } catch (error) {
-      socket;
+      logger.error(error);
     }
 
     socket.on("message", async (room, message, ack) => {
@@ -45,13 +48,13 @@ export const registerWsRoutes = (
         socket.to(result.room).emit("message", result);
         ack(result);
       } catch (error) {
-        console.log(`Users ${socket.data.sub} message failed`, error);
+        logger.error(error, `Users ${socket.data.sub} message failed`);
         ack(null, "Cannot send message");
       }
     });
 
     socket.on("disconnect", async (reason) => {
-      console.log(`Client ${socket.data.sub} disconnected: ${reason}`);
+      logger.info(`Client ${socket.data.sub} disconnected: ${reason}`);
       socket.broadcast.emit("userDisconnected", socket.data.sub);
     });
   });
