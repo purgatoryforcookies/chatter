@@ -19,6 +19,7 @@ describe("Routes", () => {
   });
 
   afterAll(async () => {
+    await io.close();
     if (server) {
       server.close();
     }
