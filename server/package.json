@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.ts",
   "scripts": {
-    "test": "echo tests disabled",
+    "test": "jest",
     "test:watch": "jest --watch --coverage",
     "dev": "nodemon -L -e ts -r dotenv/config",
     "build": "tsc",
