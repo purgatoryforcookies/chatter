@@ -14,6 +14,11 @@ export class TestDao {
             DELETE FROM message;`);
   }
 
+  async resetMigrations() {
+    await this.pool.query(`
+            DELETE FROM pgmigrations;`);
+  }
+
   async getUsers(excludeSystem = false) {
     const query = excludeSystem
       ? "SELECT * FROM users WHERE id != 'system'"

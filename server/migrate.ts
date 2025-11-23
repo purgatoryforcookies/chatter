@@ -18,16 +18,18 @@ export const runMigrations = async () => {
       logger: logger,
     });
   } finally {
+    logger.info("Migrations done.");
     connection.release();
   }
 };
 
 if (require.main === module) {
-  try {
-    runMigrations();
-  } catch (error) {
-    logger.error(error);
-    exit(1);
-  }
-  exit();
+  runMigrations()
+    .then(() => {
+      exit();
+    })
+    .catch((err) => {
+      logger.error(err);
+      exit(1);
+    });
 }

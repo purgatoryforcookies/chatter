@@ -8,7 +8,7 @@ const config: Config = {
   testEnvironment: "node",
   setupFiles: ["<rootDir>/test/setup-tests.ts"],
   globalSetup: "<rootDir>/test/global-setup.ts",
-  // extensionsToTreatAsEsm: [".ts"],
+  globalTeardown: "<rootDir>/test/global-teardown.ts",
   coveragePathIgnorePatterns: ["<rootDir>/test", "<rootDir>/src/errors.ts"],
   watchPathIgnorePatterns: ["<rootDir>/coverage", "<rootDir>/node_modules"],
   transformIgnorePatterns: ["node_modules/(?!(jose)/)"],

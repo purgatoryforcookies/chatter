@@ -32,6 +32,7 @@ tasks:
       - docker compose -f docker-compose.dev.yaml up db redis --build
   migrate:
     cmds:
+      - docker compose -f docker-compose.dev.yaml build
       - docker compose -f docker-compose.dev.yaml run server npm run migrate:local
   bastion:
     vars:
