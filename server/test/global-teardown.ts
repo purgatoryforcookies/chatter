@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import { join } from "path";
-import { TestDao } from "./data/dao";
 console.log(config({ path: join(__dirname, "..", "test.env") }));
+import { TestDao } from "./data/dao";
 
 export default async () => {
   const dao = new TestDao();

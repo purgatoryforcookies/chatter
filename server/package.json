@@ -5,7 +5,7 @@
   "main": "main.ts",
   "scripts": {
     "test": "jest",
-    "test:watch": "jest --watch --coverage",
+    "test:watch": "jest --watch --coverage --forceExit",
     "dev": "nodemon -L -e ts -r dotenv/config",
     "build": "tsc",
     "postbuild": "npm run copyCerts && npm run copyMigrations",

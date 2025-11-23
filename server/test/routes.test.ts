@@ -18,7 +18,7 @@ describe("Routes", () => {
     server.listen(1234);
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     if (server) {
       server.close();
     }
