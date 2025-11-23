@@ -9,9 +9,11 @@ import { User } from "../schema";
 const router = Router();
 
 const getNewTokenRequest = {
-  body: z.object({
-    username: z.string().optional(),
-  }),
+  body: z
+    .object({
+      username: z.string(),
+    })
+    .optional(),
 };
 
 router.post("/", validateRequest(getNewTokenRequest), async (req, res) => {

@@ -92,7 +92,6 @@ export class ChatService {
       }
 
       if (migrations.length === latestInDb.length) {
-        logger.info("Migrations are up to date!");
         return false;
       }
 

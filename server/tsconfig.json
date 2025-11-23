@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "skipLibCheck": true,
-    "moduleResolution": "nodenext"
+    "moduleResolution": "node16"
   },
   "include": ["src", "test", "types.ts", "../types.ts", "main.ts", "migrate.ts"]
 }

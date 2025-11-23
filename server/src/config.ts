@@ -53,6 +53,10 @@ const config = {
 const pool = new Pool({
   ...config.db,
   min: 1,
+  query_timeout: 4000,
+  log(...messages) {
+    messages.forEach((m) => logger.info);
+  },
   max: 10,
   ssl: config.isInEcs
     ? {

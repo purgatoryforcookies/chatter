@@ -1,8 +1,9 @@
 import { Router } from "express";
 import z from "zod";
-import { chatService, io } from "../../main";
+import { chatService } from "../../main";
 import { restAuth } from "../middleware/auth";
 import { validateRequest } from "../middleware/validate";
+import { io } from "../server";
 
 const router = Router();
 
@@ -10,7 +11,7 @@ router.use(restAuth);
 
 const getChatRequestSchema = {
   params: z.object({
-    id: z.string(),
+    id: z.uuid(),
   }),
 };
 router.get(

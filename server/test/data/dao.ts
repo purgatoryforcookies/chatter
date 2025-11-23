@@ -9,8 +9,8 @@ export class TestDao {
   async clear() {
     await this.pool.query(`
             DELETE FROM permission;
-            DELETE FROM users WHERE id != 'system';
             DELETE FROM room;
+            DELETE FROM users WHERE id != 'system';
             DELETE FROM message;`);
   }
 

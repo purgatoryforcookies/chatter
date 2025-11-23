@@ -8,12 +8,12 @@ import { BadRequestError } from "../errors";
  * https://jakerobins.com/blog/using-zod-to-provide-typesafe-express-requests
  */
 
-export type HandlerType<T, Q, B> = Request<T, any, Q, B, any>;
+export type HandlerType<T, B, Q> = Request<T, any, B, Q, any>;
 
 export function validateRequest<
   SParams extends z.ZodObject | undefined,
   SQuery extends z.ZodObject | undefined,
-  SBody extends z.ZodObject | undefined,
+  SBody extends z.ZodOptional | z.ZodObject | undefined,
   TParams extends z.infer<SParams extends z.ZodObject ? SParams : any>,
   TQuery extends z.infer<SQuery extends z.ZodObject ? SQuery : any>,
   TBody extends z.infer<SBody extends z.ZodObject ? SBody : any>
@@ -23,13 +23,12 @@ export function validateRequest<
     res: Response,
     next: NextFunction
   ) => {
-    // console.log(req.method, req.url, req.body);
     try {
-      schema.params?.parse(req.params || {});
+      schema.params?.parse(req.params);
 
-      schema.query?.parse(req.query || {});
+      schema.query?.parse(req.query);
 
-      schema.body?.parse(req.body || {});
+      schema.body?.parse(req.body);
       next();
     } catch (error) {
       if (error instanceof ZodError) {
