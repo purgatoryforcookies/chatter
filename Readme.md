@@ -95,9 +95,3 @@ Note: It is expected that you use an aws credential manager of some sort. I reco
 2. Run `task deployinfra`
 3. After ECR stack has been created, run `task buildaws`
 4. After deployment finishes, you can access chatter from your domain name. [Route53](https://us-east-1.console.aws.amazon.com/route53/v2/home?region=eu-west-1#Dashboard)
-
-## Snippets
-
-```
-assume -t
-```
