@@ -26,18 +26,14 @@ Supports both anonymous and registered users.
 ### Getting started
 
 0. Fork the repository
-1. Create 2x .env files following the examples provided
+1. run `task dev`
+2. run `task migrate` on a separate shell
+3. Chatter is available on `localhost:${SERVER_PORT}`
 
-- client/.env
-- server/.env
-
-These two variables are meant to be set when running in development mode
+These two variables under /server are meant to be set for dev (task handles this for you)
 
 - [ ] DEVELOPMENT=true
 - [ ] CLIENT_PROXY=http://+client service name in docker-copose file+:5173
-
-2. run `task dev` or grab the command from the Makefile
-3. Chatter is available on `localhost:${SERVER_PORT}`
 
 Note: The client is not exposed to host on purpose, it is proxied through the server in development.
 
@@ -51,7 +47,7 @@ Locally exposed ports
 ### Migrations
 
 1. `cd server && npm run migrate create {migration name}`
-2. `cd server && npm run migrate:local` || `task migrate` || `docker compose -f docker-compose.dev.yaml run server npm run migrate:local`
+2. `task migrate` to run migrations
 
 ## Deployment
 
