@@ -24,7 +24,9 @@ tasks:
   destroyinfra:
     cmds:
       - cd infra && npx cdk destroy --all --force
+
   dev:
+    deps: [env-root, env-infra, env-client, env-server]
     cmds:
       - docker compose -f docker-compose.dev.yaml up --build
   dev-db:
@@ -53,3 +55,28 @@ tasks:
           --target {{.BASTION_ID}} \
           --document-name AWS-StartPortForwardingSessionToRemoteHost \
           --parameters "portNumber=5432,localPortNumber=5432,host={{.AWS_DB_HOST}}"
+
+  env-root:
+    internal: true
+    status:
+      - test -f .env
+    cmds:
+      - cp example.env .env
+  env-infra:
+    internal: true
+    status:
+      - test -f infra/.env
+    cmds:
+      - cp infra/example.env infra/.env
+  env-server:
+    internal: true
+    status:
+      - test -f server/.env
+    cmds:
+      - cp server/example.env server/.env
+  env-client:
+    internal: true
+    status:
+      - test -f client/.env
+    cmds:
+      - cp client/example.env client/.env
