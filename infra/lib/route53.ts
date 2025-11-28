@@ -1,4 +1,4 @@
-import { App, Stack, StackProps } from "aws-cdk-lib";
+import { App, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { SecurityGroup } from "aws-cdk-lib/aws-ec2";
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns";
 import { CfnServerlessCache } from "aws-cdk-lib/aws-elasticache";
@@ -30,11 +30,12 @@ export class Route53Stack extends Stack {
       }
     );
 
-    new ARecord(this, "EcsAlbAliasRecord", {
+    const record = new ARecord(this, "EcsAlbAliasRecord", {
       zone: hostedZone,
       target: RecordTarget.fromAlias(
         new LoadBalancerTarget(stacks.ecs.loadBalancer)
       ),
     });
+    record.applyRemovalPolicy(RemovalPolicy.DESTROY);
   }
 }
