@@ -25,7 +25,7 @@ Supports both anonymous and registered users.
 
 ### Getting started
 
-0. Fork the repository
+0. Clone the repository
 1. run `task dev`
 2. run `task migrate` on a separate shell
 3. Chatter is available on `localhost:${SERVER_PORT}`
@@ -46,7 +46,7 @@ Locally exposed ports
 
 ### Migrations
 
-1. `cd server && npm run migrate create {migration name}`
+1. `cd server && npm run migrate:tool create {migration name}`
 2. `task migrate` to run migrations
 
 ## Deployment
