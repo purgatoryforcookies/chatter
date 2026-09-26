@@ -21,6 +21,8 @@ services:
       args:
         VITE_AUTH_DOMAIN: ${VITE_AUTH_DOMAIN}
         VITE_AUTH_CLIENT_ID: ${VITE_AUTH_CLIENT_ID}
+    extra_hosts:
+      - "auth.purgatoryforcookies.com:host-gateway"
     environment:
         POSTGRES_USER: ${POSTGRES_USER}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
