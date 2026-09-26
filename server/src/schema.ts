@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const Role = z.enum(["user", "visitor", "admin"]);
+
 export const userSchema = z.object({
   preferred_username: z.string(),
   email: z.email().optional(),
