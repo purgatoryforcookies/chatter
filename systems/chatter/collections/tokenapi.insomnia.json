@@ -1,0 +1,31 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "resources": [
+    { "_id": "wrk_tokenapi", "_type": "workspace", "name": "tokenapi", "scope": "collection" },
+    {
+      "_id": "env_tokenapi",
+      "_type": "environment",
+      "parentId": "wrk_tokenapi",
+      "name": "Base Environment",
+      "data": { "baseUrl": "http://localhost:3000", "token": "", "refreshToken": "" }
+    },
+    { "_id": "fld_token", "_type": "request_group", "parentId": "wrk_tokenapi", "name": "token" },
+    {
+      "_id": "req_token_post", "_type": "request", "parentId": "fld_token", "name": "Create anonymous token",
+      "method": "POST", "url": "{{ _.baseUrl }}/api/token",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\n  \"username\": \"cat-lover\"\n}" }
+    },
+    {
+      "_id": "req_token_refresh", "_type": "request", "parentId": "fld_token", "name": "Refresh tokens",
+      "method": "GET", "url": "{{ _.baseUrl }}/api/token/refresh",
+      "headers": [{ "name": "Authorization", "value": "{{ _.refreshToken }}" }]
+    },
+    {
+      "_id": "req_token_me", "_type": "request", "parentId": "fld_token", "name": "Get current user",
+      "method": "GET", "url": "{{ _.baseUrl }}/api/token/me",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ _.token }}" }]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import", "node"],
+  "jsPlugins": ["./lint/conventions.js"],
+  "ignorePatterns": ["dist/**", "dist-test/**", "lint/**"],
+  "rules": {
+    "import/no-default-export": "error",
+    "typescript/consistent-type-assertions": [
+      "error",
+      {
+        "assertionStyle": "never"
+      }
+    ],
+    "typescript/parameter-properties": "error",
+    "func-style": ["error", "expression"],
+    "no-empty": "error",
+    "no-throw-literal": "error",
+    "typescript/no-explicit-any": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["**/utils", "**/utils.js"],
+            "message": "Do not create utils files; they are most often needless and a sign of bad desing."
+          }
+        ]
+      }
+    ],
+    "node/no-process-env": "error",
+    "conventions/object-params": "error",
+    "conventions/no-access-modifiers": "error",
+    "conventions/no-private-fields": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/config/**"],
+      "rules": {
+        "node/no-process-env": "off"
+      }
+    }
+  ]
+}

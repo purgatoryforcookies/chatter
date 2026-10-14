@@ -1,0 +1,49 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "resources": [
+    { "_id": "wrk_restapi", "_type": "workspace", "name": "restapi", "scope": "collection" },
+    {
+      "_id": "env_restapi",
+      "_type": "environment",
+      "parentId": "wrk_restapi",
+      "name": "Base Environment",
+      "data": { "baseUrl": "http://localhost:3000", "token": "", "roomId": "" }
+    },
+    { "_id": "fld_chat", "_type": "request_group", "parentId": "wrk_restapi", "name": "chat" },
+    { "_id": "fld_user", "_type": "request_group", "parentId": "wrk_restapi", "name": "user" },
+    { "_id": "fld_room", "_type": "request_group", "parentId": "wrk_restapi", "name": "room" },
+    {
+      "_id": "req_chat_get", "_type": "request", "parentId": "fld_chat", "name": "Get messages of a room",
+      "method": "GET", "url": "{{ _.baseUrl }}/api/chat/{{ _.roomId }}",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ _.token }}" }]
+    },
+    {
+      "_id": "req_user_get", "_type": "request", "parentId": "fld_user", "name": "Get all users",
+      "method": "GET", "url": "{{ _.baseUrl }}/api/user",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ _.token }}" }]
+    },
+    {
+      "_id": "req_room_get", "_type": "request", "parentId": "fld_room", "name": "Get rooms",
+      "method": "GET", "url": "{{ _.baseUrl }}/api/room",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ _.token }}" }]
+    },
+    {
+      "_id": "req_room_post", "_type": "request", "parentId": "fld_room", "name": "Create room",
+      "method": "POST", "url": "{{ _.baseUrl }}/api/room",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"project-x\",\n  \"description\": \"Private planning room\",\n  \"participants\": [\"Anonymous-a1b2c3\"]\n}"
+      }
+    },
+    {
+      "_id": "req_room_delete", "_type": "request", "parentId": "fld_room", "name": "Delete room",
+      "method": "DELETE", "url": "{{ _.baseUrl }}/api/room/{{ _.roomId }}",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ _.token }}" }]
+    }
+  ]
+}

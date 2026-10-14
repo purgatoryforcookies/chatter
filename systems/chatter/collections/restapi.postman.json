@@ -1,0 +1,75 @@
+{
+  "info": {
+    "name": "restapi",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "roomId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "chat",
+      "item": [
+        {
+          "name": "Get messages of a room",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/chat/{{roomId}}", "host": ["{{baseUrl}}"], "path": ["api", "chat", "{{roomId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "user",
+      "item": [
+        {
+          "name": "Get all users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/user", "host": ["{{baseUrl}}"], "path": ["api", "user"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "room",
+      "item": [
+        {
+          "name": "Get rooms",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/room", "host": ["{{baseUrl}}"], "path": ["api", "room"] }
+          }
+        },
+        {
+          "name": "Create room",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"project-x\",\n  \"description\": \"Private planning room\",\n  \"participants\": [\"Anonymous-a1b2c3\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/room", "host": ["{{baseUrl}}"], "path": ["api", "room"] }
+          }
+        },
+        {
+          "name": "Delete room",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/room/{{roomId}}", "host": ["{{baseUrl}}"], "path": ["api", "room", "{{roomId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}

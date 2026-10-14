@@ -1,0 +1,43 @@
+{
+  "info": {
+    "name": "tokenapi",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "refreshToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "token",
+      "item": [
+        {
+          "name": "Create anonymous token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"cat-lover\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/token", "host": ["{{baseUrl}}"], "path": ["api", "token"] }
+          }
+        },
+        {
+          "name": "Refresh tokens",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "{{refreshToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/token/refresh", "host": ["{{baseUrl}}"], "path": ["api", "token", "refresh"] }
+          }
+        },
+        {
+          "name": "Get current user",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/token/me", "host": ["{{baseUrl}}"], "path": ["api", "token", "me"] }
+          }
+        }
+      ]
+    }
+  ]
+}

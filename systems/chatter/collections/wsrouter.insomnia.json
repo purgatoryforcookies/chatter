@@ -1,0 +1,21 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "resources": [
+    { "_id": "wrk_wsrouter", "_type": "workspace", "name": "wsrouter", "scope": "collection" },
+    {
+      "_id": "env_wsrouter",
+      "_type": "environment",
+      "parentId": "wrk_wsrouter",
+      "name": "Base Environment",
+      "data": { "host": "localhost:3000", "token": "" }
+    },
+    { "_id": "fld_socket", "_type": "request_group", "parentId": "wrk_wsrouter", "name": "socket" },
+    {
+      "_id": "ws_connect", "_type": "websocket_request", "parentId": "fld_socket", "name": "Socket.IO connection",
+      "url": "ws://{{ _.host }}/socket.io/?EIO=4&transport=websocket",
+      "headers": [],
+      "description": "After the open packet send: 40{\"token\":\"{{ _.token }}\"}  then: 42[\"message\",\"<room uuid>\",\"hello everyone\"]"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "info": {
+    "name": "wsrouter",
+    "description": "Socket.IO server. Send the access token in the handshake auth payload: {\"token\": \"<token>\"}. Events: message(room, message, ack); server emits userConnected, userDisconnected, message, hello, invite, leaveRoom.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "host", "value": "localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "socket",
+      "item": [
+        {
+          "name": "Socket.IO connection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "ws://{{host}}/socket.io/?EIO=4&transport=websocket",
+              "protocol": "ws",
+              "host": ["{{host}}"],
+              "path": ["socket.io", ""],
+              "query": [
+                { "key": "EIO", "value": "4" },
+                { "key": "transport", "value": "websocket" }
+              ]
+            },
+            "description": "After the open packet send: 40{\"token\":\"{{token}}\"}  then: 42[\"message\",\"<room uuid>\",\"hello everyone\"]"
+          }
+        }
+      ]
+    }
+  ]
+}
